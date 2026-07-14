@@ -1,36 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Photobooth
+
+A mobile-first web app for taking photobooth photo strips. Choose a layout, capture photos with a countdown, review and retake, pick a frame color, and download your strip as a PNG.
+
+## Features
+
+- **3 layout options** — 6:2 vertical (3 or 4 photos) and 6:5 grid (2×2)
+- **Countdown timer** — 3, 5, or 10 seconds before each capture
+- **Review & retake** — retake any individual photo
+- **Frame colors** — white, black, blush, sage, navy, gold
+- **Download** — save the composed strip as PNG
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Testing on Mobile
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Camera access requires a **secure context** (HTTPS or localhost).
 
-## Learn More
+- **Same device:** Use `http://localhost:3000` if testing in the mobile browser on your dev machine.
+- **LAN testing:** Run `npm run dev` and open `http://<your-local-ip>:3000` on your phone. Camera may be blocked over HTTP on some browsers — use HTTPS via a tunnel (e.g. ngrok) for reliable mobile camera access.
 
-To learn more about Next.js, take a look at the following resources:
+## Tech Stack
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Next.js (App Router)
+- React + TypeScript
+- Tailwind CSS
+- Framer Motion
+- react-webcam
+- Canvas API (strip composition)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## User Flow
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Choose layout (visual photostrip preview)
+2. Capture photos with countdown
+3. Review and retake individual photos
+4. Confirm photos
+5. Choose frame color
+6. Confirm frame preview
+7. Download PNG
