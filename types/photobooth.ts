@@ -1,32 +1,32 @@
-export type LayoutId = "vertical-3" | "vertical-4" | "grid-4";
+export type PhotoboothStep = "landing" | "addPhoto" | "customize" | "print";
 
-export type AspectRatio = "6:2" | "6:5";
+export type FrameId = "frame1" | "frame2" | "frame3" | "frame4" | "frame5";
 
-export type Arrangement = "vertical" | "grid-2x2";
-
-export type PhotoboothStep =
-  | "layout"
-  | "capture"
-  | "review"
-  | "confirmPhotos"
-  | "frameColor"
-  | "confirmFrame"
-  | "download";
+export type PhotoMode = "take" | "upload";
 
 export type CountdownSeconds = 3 | 5 | 10;
 
-export interface LayoutConfig {
-  id: LayoutId;
-  label: string;
-  description: string;
-  aspectRatio: AspectRatio;
-  photoCount: 3 | 4;
-  arrangement: Arrangement;
-  cols: number;
-  rows: number;
+export interface PhotoSlot {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
 }
 
-export interface FrameColorOption {
+export interface FrameConfig {
+  id: FrameId;
+  label: string;
+  photoCount: number;
+  cols: number;
+  rows: number;
+  aspectRatio: number;
+  svgPath: string;
+  iconPath: string;
+  slots: PhotoSlot[];
+  captionY: number;
+}
+
+export interface ColorSwatch {
   id: string;
   label: string;
   value: string;
@@ -34,12 +34,16 @@ export interface FrameColorOption {
 
 export interface PhotoboothState {
   step: PhotoboothStep;
-  layout: LayoutConfig | null;
+  frame: FrameConfig | null;
   photos: (string | null)[];
+  photoMode: PhotoMode;
   countdownSeconds: CountdownSeconds;
   frameColor: string;
+  textColor: string;
+  captionText: string;
   finalStripUrl: string | null;
-  retakeIndex: number | null;
+  activeSlotIndex: number | null;
+  isRetaking: boolean;
 }
 
 export type CameraErrorType =
@@ -54,12 +58,6 @@ export interface CameraError {
   type: CameraErrorType;
   message: string;
 }
-
-export type CameraSessionState =
-  | "idle"
-  | "requesting"
-  | "active"
-  | "error";
 
 export function createEmptyPhotos(count: number): (string | null)[] {
   return Array.from({ length: count }, () => null);

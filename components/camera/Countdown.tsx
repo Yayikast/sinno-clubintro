@@ -20,9 +20,11 @@ export function Countdown({ count }: CountdownProps) {
         exit={{ opacity: 0, scale: 1.5 }}
         transition={{ duration: 0.3, ease: "easeOut" }}
       >
-        <span className="select-none text-[8rem] font-bold text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.8)]">
-          {count}
-        </span>
+        <div className="flex h-24 w-24 items-center justify-center rounded-full bg-white/80">
+          <span className="font-mono select-none text-5xl font-bold text-black">
+            {count}
+          </span>
+        </div>
       </motion.div>
     </AnimatePresence>
   );

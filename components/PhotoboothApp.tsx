@@ -2,22 +2,16 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { usePhotobooth } from "@/context/PhotoboothProvider";
-import { LayoutPicker } from "@/components/steps/LayoutPicker";
-import { CaptureStep } from "@/components/steps/CaptureStep";
-import { PhotoReview } from "@/components/steps/PhotoReview";
-import { ConfirmPhotos } from "@/components/steps/ConfirmPhotos";
-import { FrameColorPicker } from "@/components/steps/FrameColorPicker";
-import { ConfirmFrame } from "@/components/steps/ConfirmFrame";
-import { DownloadStep } from "@/components/steps/DownloadStep";
+import { LandingStep } from "@/components/steps/LandingStep";
+import { AddPhotoStep } from "@/components/steps/AddPhotoStep";
+import { CustomizeStep } from "@/components/steps/CustomizeStep";
+import { PrintStep } from "@/components/steps/PrintStep";
 
 const STEP_COMPONENTS = {
-  layout: LayoutPicker,
-  capture: CaptureStep,
-  review: PhotoReview,
-  confirmPhotos: ConfirmPhotos,
-  frameColor: FrameColorPicker,
-  confirmFrame: ConfirmFrame,
-  download: DownloadStep,
+  landing: LandingStep,
+  addPhoto: AddPhotoStep,
+  customize: CustomizeStep,
+  print: PrintStep,
 } as const;
 
 export function PhotoboothApp() {
@@ -28,9 +22,9 @@ export function PhotoboothApp() {
     <AnimatePresence mode="wait">
       <motion.div
         key={step}
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: -20 }}
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -12 }}
         transition={{ duration: 0.2 }}
         className="min-h-dvh"
       >

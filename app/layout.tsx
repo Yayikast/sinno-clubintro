@@ -1,24 +1,14 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { fontCursive, fontMono } from "@/lib/fonts";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
-  title: "Photobooth",
-  description: "Mobile-first photobooth web app — take and download photo strips",
+  title: "PhotoBooth",
+  description: "Capture the moments — mobile photobooth web app",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent",
-    title: "Photobooth",
+    statusBarStyle: "default",
+    title: "PhotoBooth",
   },
 };
 
@@ -28,7 +18,7 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: "cover",
-  themeColor: "#09090b",
+  themeColor: "#FFF5F7",
 };
 
 export default function RootLayout({
@@ -39,9 +29,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${fontCursive.variable} ${fontMono.variable} h-full antialiased`}
     >
-      <body className="min-h-dvh overflow-x-hidden bg-zinc-950 font-sans text-white">
+      <body className="min-h-dvh overflow-x-hidden bg-[#FFF5F7] text-black">
         {children}
       </body>
     </html>

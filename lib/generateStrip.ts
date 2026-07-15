@@ -1,9 +1,6 @@
-import { getAspectRatioValue } from "@/lib/layouts";
-import type { LayoutConfig } from "@/types/photobooth";
+import type { FrameConfig } from "@/types/photobooth";
 
-const STRIP_WIDTH = 1200;
-const PADDING_RATIO = 0.04;
-const GAP_RATIO = 0.02;
+const EXPORT_WIDTH = 1200;
 
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -51,16 +48,29 @@ function drawCoverImage(
   );
 }
 
+async function loadFrameSvg(frameColor: string, svgPath: string): Promise<HTMLImageElement> {
+  const response = await fetch(svgPath);
+  const svgText = await response.text();
+  const coloredSvg = svgText.replace(/fill="black"/g, `fill="${frameColor}"`);
+  const blob = new Blob([coloredSvg], { type: "image/svg+xml" });
+  const url = URL.createObjectURL(blob);
+
+  try {
+    return await loadImage(url);
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
 export async function generateStrip(
   photos: string[],
-  layout: LayoutConfig,
+  frame: FrameConfig,
   frameColor: string,
+  textColor: string,
+  captionText: string,
 ): Promise<string> {
-  const aspectRatio = getAspectRatioValue(layout.aspectRatio);
-  const stripWidth = STRIP_WIDTH;
-  const stripHeight = Math.round(stripWidth / aspectRatio);
-  const padding = Math.round(stripWidth * PADDING_RATIO);
-  const gap = Math.round(stripWidth * GAP_RATIO);
+  const stripWidth = EXPORT_WIDTH;
+  const stripHeight = Math.round(stripWidth / frame.aspectRatio);
 
   const canvas = document.createElement("canvas");
   canvas.width = stripWidth;
@@ -74,23 +84,35 @@ export async function generateStrip(
   ctx.fillStyle = frameColor;
   ctx.fillRect(0, 0, stripWidth, stripHeight);
 
-  const contentWidth = stripWidth - padding * 2;
-  const contentHeight = stripHeight - padding * 2;
-  const slotWidth =
-    (contentWidth - gap * (layout.cols - 1)) / layout.cols;
-  const slotHeight =
-    (contentHeight - gap * (layout.rows - 1)) / layout.rows;
-
   const images = await Promise.all(photos.map((photo) => loadImage(photo)));
 
   images.forEach((image, index) => {
-    const col = index % layout.cols;
-    const row = Math.floor(index / layout.cols);
-    const x = padding + col * (slotWidth + gap);
-    const y = padding + row * (slotHeight + gap);
+    const slot = frame.slots[index];
+    if (!slot) return;
 
-    drawCoverImage(ctx, image, x, y, slotWidth, slotHeight);
+    const x = slot.x * stripWidth;
+    const y = slot.y * stripHeight;
+    const width = slot.width * stripWidth;
+    const height = slot.height * stripHeight;
+
+    drawCoverImage(ctx, image, x, y, width, height);
   });
+
+  const frameOverlay = await loadFrameSvg(frameColor, frame.svgPath);
+  ctx.drawImage(frameOverlay, 0, 0, stripWidth, stripHeight);
+
+  if (captionText.trim()) {
+    const fontSize = Math.round(stripWidth * 0.045);
+    ctx.fillStyle = textColor;
+    ctx.font = `${fontSize}px Caveat, cursive`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(
+      captionText,
+      stripWidth / 2,
+      frame.captionY * stripHeight,
+    );
+  }
 
   return canvas.toDataURL("image/png");
 }
