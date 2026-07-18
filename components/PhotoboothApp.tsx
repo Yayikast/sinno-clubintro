@@ -26,7 +26,7 @@ export function PhotoboothApp() {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -12 }}
         transition={{ duration: 0.2 }}
-        className="min-h-dvh"
+        className="min-h-dvh w-full max-w-full overflow-x-hidden"
       >
         <StepComponent />
       </motion.div>

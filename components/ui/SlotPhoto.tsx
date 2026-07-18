@@ -79,13 +79,13 @@ export function SlotPhoto({
           height,
           minHeight: height,
           maxHeight: height,
-          boxSizing: "border-box",
+          boxSizing: "border-box" as const,
         }
       : {
           width: resolvedWidth,
           height,
           aspectRatio: `${aspectRatio}`,
-          boxSizing: "border-box",
+          boxSizing: "border-box" as const,
         };
 
   if (onClick) {

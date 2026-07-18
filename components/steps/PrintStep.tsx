@@ -5,7 +5,7 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePhotobooth } from "@/context/PhotoboothProvider";
 import { downloadStrip } from "@/lib/generateStrip";
-import { PageShell, PinkButton } from "@/components/ui/PageShell";
+import { PageContent, PageShell, PinkButton } from "@/components/ui/PageShell";
 
 const PRINTING_DURATION_MS = 2500;
 
@@ -28,8 +28,8 @@ export function PrintStep() {
 
   return (
     <PageShell showBack onBack={goBack}>
-      <div className="mx-auto flex w-full max-w-sm flex-col items-center gap-6">
-        <h2 className="font-cursive text-2xl font-bold text-black">
+      <PageContent className="w-full min-w-0 gap-6">
+        <h2 className="font-cursive text-center text-2xl font-bold text-black">
           {isPrinting ? "Printing..." : "Your photostrip is ready!"}
         </h2>
 
@@ -61,20 +61,20 @@ export function PrintStep() {
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="grid w-full grid-cols-2 gap-3"
+              className="flex justify-center gap-3"
             >
               <PinkButton variant="secondary" onClick={reset}>
-                <Image src="/figma/icons/home.svg" alt="" width={18} height={18} />
+                <Image src="/figma/icons/home.svg" alt="" width={16} height={16} />
                 Home
               </PinkButton>
               <PinkButton onClick={handleDownload}>
-                <Image src="/figma/icons/download.svg" alt="" width={18} height={18} />
+                <Image src="/figma/icons/download.svg" alt="" width={16} height={16} />
                 Download
               </PinkButton>
             </motion.div>
           ) : null}
         </AnimatePresence>
-      </div>
+      </PageContent>
     </PageShell>
   );
 }

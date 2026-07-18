@@ -1,9 +1,11 @@
+import { PAGE_LAYOUT } from "@/lib/pageLayout";
+
 /** Landing page layout tokens from Figma (393×852 frame). */
 export const LANDING_LAYOUT = {
-  frameWidth: 393,
+  frameWidth: PAGE_LAYOUT.frameWidth,
   frameHeight: 852,
-  paddingX: 32,
-  paddingY: 56,
+  paddingX: PAGE_LAYOUT.paddingX,
+  paddingY: PAGE_LAYOUT.paddingY,
   titleSize: 40,
   subtitleSize: 12,
   captionSize: 8,
@@ -21,10 +23,34 @@ export const LANDING_LAYOUT = {
   selectorSelectedBg: "rgba(255, 255, 255, 0.2)",
   selectorSelectedRadius: 4,
   selectorGap: 8,
-  buttonWidth: 133.33,
-  buttonHeight: 35,
-  buttonRadius: 6,
+  buttonWidth: PAGE_LAYOUT.primaryButton.width,
+  buttonHeight: PAGE_LAYOUT.primaryButton.height,
+  buttonRadius: PAGE_LAYOUT.primaryButton.radius,
 } as const;
+
+/** Scale frame selector row to fit the content column without clipping. */
+export function getFrameSelectorLayout(
+  frameCount: number,
+  availableWidth: number = PAGE_LAYOUT.contentWidth,
+): {
+  size: number;
+  gap: number;
+  iconHeight: number;
+  radius: number;
+} {
+  const { selectorSelectedSize, selectorGap, selectorHeight, selectorSelectedRadius } =
+    LANDING_LAYOUT;
+  const totalWidth =
+    frameCount * selectorSelectedSize + Math.max(0, frameCount - 1) * selectorGap;
+  const scale = totalWidth > availableWidth ? availableWidth / totalWidth : 1;
+
+  return {
+    size: selectorSelectedSize * scale,
+    gap: selectorGap * scale,
+    iconHeight: selectorHeight * scale,
+    radius: selectorSelectedRadius * scale,
+  };
+}
 
 export function getLandingPreviewSize(aspectRatio: number): {
   width: number;

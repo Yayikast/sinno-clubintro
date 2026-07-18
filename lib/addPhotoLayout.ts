@@ -1,10 +1,12 @@
+import { PAGE_LAYOUT } from "@/lib/pageLayout";
+
 /** Add Photo — Take Photo layout tokens (393×852 frame, 329px content). */
 export const ADD_PHOTO_LAYOUT = {
-  contentWidth: 329,
+  contentWidth: PAGE_LAYOUT.contentWidth,
   /** Space between subtitle and Take Photos / Upload tabs. */
   headerToTabsGap: 40,
   modeTabs: {
-    width: 329,
+    width: PAGE_LAYOUT.contentWidth,
     height: 35,
     buttonWidth: 160.5,
     gap: 8,
@@ -37,7 +39,37 @@ export const ADD_PHOTO_LAYOUT = {
     height: 329,
     background: "#202020",
   },
+  takePhoto: {
+    tabsToCountdownGap: 24,
+    countdownToCaptureGap: 16,
+    viewfinderToThumbnailsGap: 12,
+    thumbnailsToDescriptionGap: 16,
+    descriptionToFooterGap: 24,
+  },
+  upload: {
+    /** Same preview size as landing frame picker (133.33 × 400 vertical). */
+    previewWidth: 133.33,
+    previewHeight: 400,
+    captionSize: 8,
+    placeholderBg: "#2a2a2a",
+    overlayBg: "rgba(32, 32, 32, 0.8)",
+    tabsToPreviewGap: 24,
+    previewToHintGap: 32,
+  },
 } as const;
+
+export function getUploadPreviewSize(aspectRatio: number): {
+  width: number;
+  height: number;
+} {
+  const height = ADD_PHOTO_LAYOUT.upload.previewHeight;
+  const width =
+    aspectRatio <= 400 / 1200
+      ? ADD_PHOTO_LAYOUT.upload.previewWidth
+      : height * aspectRatio;
+
+  return { width, height };
+}
 
 export interface AddPhotoThumbnailSize {
   width: number;
@@ -51,9 +83,9 @@ export interface AddPhotoThumbnailSize {
  */
 export function getAddPhotoThumbnailSizes(
   frameId: keyof typeof ADD_PHOTO_LAYOUT.thumbnail.widthsByFrame,
+  maxRowWidth: number = ADD_PHOTO_LAYOUT.viewfinder.width,
 ): AddPhotoThumbnailSize[] {
-  const { thumbnail, viewfinder } = ADD_PHOTO_LAYOUT;
-  const maxRowWidth = viewfinder.width;
+  const { thumbnail } = ADD_PHOTO_LAYOUT;
   const baseWidths = [...thumbnail.widthsByFrame[frameId]];
   const baseHeight = thumbnail.height;
   const gap = thumbnail.gap;
