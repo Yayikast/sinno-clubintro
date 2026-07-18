@@ -12,8 +12,8 @@ export const FRAMES: FrameConfig[] = [
     iconPath: "/figma/frames/Frame1.svg",
     captionY: 0.945,
     slots: [
-      { x: 0.085, y: 0.028, width: 0.83, height: 0.431 },
-      { x: 0.085, y: 0.488, width: 0.83, height: 0.431 },
+      { x: 0.085, y: 0.0283, width: 0.83, height: 0.4308 },
+      { x: 0.085, y: 0.4875, width: 0.83, height: 0.4308 },
     ],
   },
   {
@@ -27,9 +27,9 @@ export const FRAMES: FrameConfig[] = [
     iconPath: "/figma/frames/Frame2.svg",
     captionY: 0.945,
     slots: [
-      { x: 0.085, y: 0.028, width: 0.83, height: 0.288 },
-      { x: 0.085, y: 0.333, width: 0.83, height: 0.288 },
-      { x: 0.085, y: 0.638, width: 0.83, height: 0.288 },
+      { x: 0.085, y: 0.0283, width: 0.83, height: 0.2767 },
+      { x: 0.085, y: 0.3333, width: 0.83, height: 0.2767 },
+      { x: 0.085, y: 0.6383, width: 0.83, height: 0.2767 },
     ],
   },
   {
@@ -43,10 +43,10 @@ export const FRAMES: FrameConfig[] = [
     iconPath: "/figma/frames/Frame3.svg",
     captionY: 0.945,
     slots: [
-      { x: 0.085, y: 0.028, width: 0.83, height: 0.213 },
-      { x: 0.085, y: 0.258, width: 0.83, height: 0.213 },
-      { x: 0.085, y: 0.488, width: 0.83, height: 0.213 },
-      { x: 0.085, y: 0.718, width: 0.83, height: 0.213 },
+      { x: 0.085, y: 0.0283, width: 0.83, height: 0.2008 },
+      { x: 0.085, y: 0.2575, width: 0.83, height: 0.2008 },
+      { x: 0.085, y: 0.4867, width: 0.83, height: 0.2008 },
+      { x: 0.085, y: 0.7158, width: 0.83, height: 0.2008 },
     ],
   },
   {
@@ -60,9 +60,9 @@ export const FRAMES: FrameConfig[] = [
     iconPath: "/figma/frames/Frame4.svg",
     captionY: 0.945,
     slots: [
-      { x: 0.045, y: 0.028, width: 0.91, height: 0.431 },
-      { x: 0.045, y: 0.488, width: 0.433, height: 0.431 },
-      { x: 0.522, y: 0.488, width: 0.433, height: 0.431 },
+      { x: 0.0446, y: 0.0283, width: 0.9107, height: 0.4308 },
+      { x: 0.0446, y: 0.4875, width: 0.433, height: 0.4308 },
+      { x: 0.5223, y: 0.4875, width: 0.433, height: 0.4308 },
     ],
   },
   {
@@ -76,10 +76,10 @@ export const FRAMES: FrameConfig[] = [
     iconPath: "/figma/frames/Frame5.svg",
     captionY: 0.945,
     slots: [
-      { x: 0.045, y: 0.028, width: 0.433, height: 0.429 },
-      { x: 0.522, y: 0.028, width: 0.433, height: 0.429 },
-      { x: 0.045, y: 0.486, width: 0.433, height: 0.429 },
-      { x: 0.522, y: 0.486, width: 0.433, height: 0.429 },
+      { x: 0.0446, y: 0.0283, width: 0.4331, height: 0.4292 },
+      { x: 0.5223, y: 0.0283, width: 0.4331, height: 0.4292 },
+      { x: 0.0446, y: 0.4858, width: 0.4331, height: 0.4292 },
+      { x: 0.5223, y: 0.4858, width: 0.4331, height: 0.4292 },
     ],
   },
 ];

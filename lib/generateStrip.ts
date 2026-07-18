@@ -95,7 +95,12 @@ export async function generateStrip(
     const width = slot.width * stripWidth;
     const height = slot.height * stripHeight;
 
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(x, y, width, height);
+    ctx.clip();
     drawCoverImage(ctx, image, x, y, width, height);
+    ctx.restore();
   });
 
   const frameOverlay = await loadFrameSvg(frameColor, frame.svgPath);

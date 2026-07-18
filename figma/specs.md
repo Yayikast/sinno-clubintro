@@ -60,3 +60,12 @@ background: linear-gradient(180deg, #FFA8BD 0%, #FFDEE6 100%);
 - Frame selection uses 5 SVG frame styles (not solid color borders).
 - Page background uses `background.png` as the complete background layer.
 - Decorative stars available in dark, light, and white variants.
+
+## Photo display (design system)
+
+**Captured and uploaded photos must never be stretched or squeezed.**
+
+- Always preserve the original aspect ratio.
+- Crop with center-cover semantics to fit frame slots.
+- Viewfinder, thumbnails, and final strip all use the same slot aspect ratio from `lib/photoDisplay.ts`.
+- UI component: `CoverImage` / `SlotPhoto` in `components/ui/SlotPhoto.tsx`.

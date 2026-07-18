@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { CoverImage } from "@/components/ui/SlotPhoto";
 import type { FrameConfig } from "@/types/photobooth";
 
 interface FramePreviewProps {
@@ -10,7 +11,12 @@ interface FramePreviewProps {
   textColor?: string;
   captionText?: string;
   className?: string;
+  /** Explicit width in px (overrides size preset). */
+  width?: number;
+  /** Explicit height in px (overrides aspect-ratio sizing). */
+  height?: number;
   size?: "sm" | "md" | "lg";
+  captionSize?: number;
   onSlotClick?: (index: number) => void;
   hoverSlotIndex?: number | null;
   showPlaceholders?: boolean;
@@ -19,11 +25,13 @@ interface FramePreviewProps {
 export function FramePreview({
   frame,
   photos,
-  frameColor = "#000000",
   textColor = "#FFFFFF",
   captionText = "moments of 2026",
   className = "",
+  width,
+  height,
   size = "md",
+  captionSize = 8,
   onSlotClick,
   hoverSlotIndex = null,
   showPlaceholders = false,
@@ -36,10 +44,18 @@ export function FramePreview({
     lg: "max-w-[280px]",
   };
 
+  const widthStyle = width ? { width, maxWidth: width } : undefined;
+  const heightStyle = height ? { height, maxHeight: height } : undefined;
+  const widthClass = width ? "" : sizeClasses[size];
+
   return (
     <div
-      className={`relative mx-auto w-full ${sizeClasses[size]} ${className}`}
-      style={{ aspectRatio: frame.aspectRatio }}
+      className={`relative mx-auto shrink-0 ${widthClass} ${className}`}
+      style={{
+        ...widthStyle,
+        ...heightStyle,
+        aspectRatio: width && height ? undefined : frame.aspectRatio,
+      }}
     >
       {slots.map((photo, index) => {
         const slot = frame.slots[index];
@@ -62,12 +78,7 @@ export function FramePreview({
             }}
           >
             {photo ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={photo}
-                alt={`Photo ${index + 1}`}
-                className="h-full w-full object-cover"
-              />
+              <CoverImage src={photo} alt={`Photo ${index + 1}`} />
             ) : showPlaceholders ? (
               <div className="flex h-full w-full items-center justify-center bg-[#2a2a2a]">
                 <Image
@@ -101,17 +112,15 @@ export function FramePreview({
         alt=""
         fill
         className="pointer-events-none object-contain"
-        style={{
-          filter: frameColor === "#000000" ? "none" : undefined,
-        }}
       />
 
       {captionText ? (
         <p
-          className="font-cursive pointer-events-none absolute left-1/2 z-10 -translate-x-1/2 text-center text-sm font-bold"
+          className="font-cursive pointer-events-none absolute left-1/2 z-10 -translate-x-1/2 text-center font-normal leading-none"
           style={{
             top: `${frame.captionY * 100}%`,
             color: textColor,
+            fontSize: captionSize,
           }}
         >
           {captionText}
@@ -125,11 +134,25 @@ interface FrameSelectorProps {
   selectedId: string;
   onSelect: (id: string) => void;
   frames: FrameConfig[];
+  itemHeight?: number;
+  selectedSize?: number;
+  selectedBg?: string;
+  selectedRadius?: number;
+  gap?: number;
 }
 
-export function FrameSelector({ selectedId, onSelect, frames }: FrameSelectorProps) {
+export function FrameSelector({
+  selectedId,
+  onSelect,
+  frames,
+  itemHeight = 50,
+  selectedSize = 66,
+  selectedBg = "rgba(255, 255, 255, 0.2)",
+  selectedRadius = 4,
+  gap = 8,
+}: FrameSelectorProps) {
   return (
-    <div className="flex items-center justify-center gap-3">
+    <div className="flex items-center justify-center" style={{ gap }}>
       {frames.map((frame) => {
         const isSelected = selectedId === frame.id;
 
@@ -139,17 +162,22 @@ export function FrameSelector({ selectedId, onSelect, frames }: FrameSelectorPro
             type="button"
             onClick={() => onSelect(frame.id)}
             aria-label={frame.label}
-            className={`flex h-12 w-12 items-center justify-center rounded-xl transition-colors ${
-              isSelected ? "bg-[#FFEDF1]" : "bg-transparent"
-            }`}
+            className="flex items-center justify-center transition-colors"
+            style={{
+              width: selectedSize,
+              height: selectedSize,
+              borderRadius: selectedRadius,
+              backgroundColor: isSelected ? selectedBg : "transparent",
+            }}
           >
-            <Image
+            <img
               src={frame.iconPath}
               alt=""
-              width={28}
-              height={28}
-              className="h-7 w-auto object-contain"
-              style={{ opacity: isSelected ? 1 : 0.7 }}
+              className="w-auto object-contain"
+              style={{
+                opacity: isSelected ? 1 : 0.55,
+                height: itemHeight,
+              }}
             />
           </button>
         );

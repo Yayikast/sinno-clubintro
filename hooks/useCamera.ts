@@ -10,11 +10,6 @@ export const VIDEO_CONSTRAINTS: MediaTrackConstraints = {
   height: { ideal: 1920 },
 };
 
-const CAPTURE_OPTIONS = {
-  width: 1080,
-  height: 1920,
-} as const;
-
 function mapMediaError(error: unknown): CameraError {
   if (typeof error === "string") {
     if (error.toLowerCase().includes("permission")) {
@@ -103,10 +98,8 @@ export function useCamera({ webcamRef, initialActive = false }: UseCameraOptions
       return null;
     }
 
-    const screenshot = webcam.getScreenshot({
-      width: CAPTURE_OPTIONS.width,
-      height: CAPTURE_OPTIONS.height,
-    });
+    // Native resolution — crop to slot aspect in the caller (never stretch).
+    const screenshot = webcam.getScreenshot();
     if (!screenshot) {
       setError({
         type: "capture-failed",

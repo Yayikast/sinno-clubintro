@@ -7,7 +7,12 @@ import {
 } from "react";
 import Image from "next/image";
 import Webcam from "react-webcam";
+import { SlotPhoto } from "@/components/ui/SlotPhoto";
 import { usePhotobooth } from "@/context/PhotoboothProvider";
+import { ADD_PHOTO_LAYOUT, getAddPhotoThumbnailSizes } from "@/lib/addPhotoLayout";
+import {
+  cropPhotoToSlot,
+} from "@/lib/photoDisplay";
 import {
   CountdownPicker,
   ModeTabs,
@@ -41,6 +46,7 @@ export function AddPhotoStep() {
 
   const webcamRef = useRef<Webcam>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const captureSlotIndexRef = useRef(0);
   const [sessionStarted, setSessionStarted] = useState(false);
   const [showFlash, setShowFlash] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
@@ -64,23 +70,48 @@ export function AddPhotoStep() {
         ? 0
         : firstEmptyIndex;
 
+  const thumbnailSizes = getAddPhotoThumbnailSizes(frame.id);
+
+  captureSlotIndexRef.current = targetIndex;
+
   const performCapture = useCallback(() => {
+    const slotIndex = captureSlotIndexRef.current;
+    const slot = frame.slots[slotIndex];
+    if (!slot) return;
+
     setIsCapturing(true);
     setShowFlash(true);
     playShutterSound();
 
     window.setTimeout(() => {
-      const screenshot = capturePhoto();
-      setShowFlash(false);
-      setIsCapturing(false);
+      void (async () => {
+        const screenshot = capturePhoto();
+        setShowFlash(false);
 
-      if (!screenshot) return;
+        if (!screenshot) {
+          setIsCapturing(false);
+          return;
+        }
 
-      setPhotoAtIndex(targetIndex, screenshot);
-      setActiveSlotIndex(null);
-      setIsRetaking(false);
+        try {
+          const cropped = await cropPhotoToSlot(screenshot, slot, frame.aspectRatio);
+          setPhotoAtIndex(slotIndex, cropped);
+          setActiveSlotIndex(null);
+          setIsRetaking(false);
+        } catch {
+          setPhotoAtIndex(slotIndex, screenshot);
+        } finally {
+          setIsCapturing(false);
+        }
+      })();
     }, 150);
-  }, [capturePhoto, setActiveSlotIndex, setIsRetaking, setPhotoAtIndex, targetIndex]);
+  }, [
+    capturePhoto,
+    frame.slots,
+    setActiveSlotIndex,
+    setIsRetaking,
+    setPhotoAtIndex,
+  ]);
 
   const { count, isCountingDown, start: startCountdown, cancel: cancelCountdown } =
     useCountdown({
@@ -90,6 +121,10 @@ export function AddPhotoStep() {
 
   const handleCaptureClick = () => {
     if (isCapturing || isCountingDown || showFlash) return;
+
+    captureSlotIndexRef.current = targetIndex;
+    setActiveSlotIndex(null);
+    setIsRetaking(false);
 
     if (!sessionStarted) {
       activateCamera();
@@ -101,12 +136,23 @@ export function AddPhotoStep() {
 
   const handleThumbnailClick = (index: number) => {
     if (photoMode !== "take") return;
+    if (!photos[index]) return;
+    if (isCapturing || showFlash) return;
+
+    if (isCountingDown) {
+      cancelCountdown();
+    }
+
+    captureSlotIndexRef.current = index;
     setActiveSlotIndex(index);
     setIsRetaking(true);
+
     if (!sessionStarted) {
       activateCamera();
       setSessionStarted(true);
     }
+
+    startCountdown();
   };
 
   const handleUploadSlotClick = (index: number) => {
@@ -118,12 +164,17 @@ export function AddPhotoStep() {
     const file = event.target.files?.[0];
     if (!file || activeSlotIndex === null) return;
 
+    const slot = frame.slots[activeSlotIndex];
+    if (!slot) return;
+
     const reader = new FileReader();
     reader.onload = () => {
-      if (typeof reader.result === "string") {
-        setPhotoAtIndex(activeSlotIndex, reader.result);
-        setActiveSlotIndex(null);
-      }
+      if (typeof reader.result !== "string") return;
+
+      void cropPhotoToSlot(reader.result, slot, frame.aspectRatio)
+        .then((cropped) => setPhotoAtIndex(activeSlotIndex, cropped))
+        .catch(() => setPhotoAtIndex(activeSlotIndex, reader.result as string))
+        .finally(() => setActiveSlotIndex(null));
     };
     reader.readAsDataURL(file);
     event.target.value = "";
@@ -164,7 +215,13 @@ export function AddPhotoStep() {
         onChange={handleFileChange}
       />
 
-      <div className="mx-auto flex w-full max-w-md flex-col gap-4">
+      <div
+        className="mx-auto flex w-full flex-col items-center gap-4"
+        style={{
+          maxWidth: ADD_PHOTO_LAYOUT.contentWidth,
+          marginTop: ADD_PHOTO_LAYOUT.headerToTabsGap,
+        }}
+      >
         <ModeTabs mode={photoMode} onChange={handleModeChange} />
 
         {photoMode === "take" ? (
@@ -174,7 +231,14 @@ export function AddPhotoStep() {
               onChange={setCountdownSeconds}
             />
 
-            <div className="relative mx-auto aspect-square w-full overflow-hidden rounded-lg bg-[#202020]">
+            <div
+              className="relative overflow-hidden rounded-lg"
+              style={{
+                width: ADD_PHOTO_LAYOUT.viewfinder.width,
+                height: ADD_PHOTO_LAYOUT.viewfinder.height,
+                backgroundColor: ADD_PHOTO_LAYOUT.viewfinder.background,
+              }}
+            >
               {showCamera ? (
                 <Webcam
                   ref={webcamRef}
@@ -184,12 +248,12 @@ export function AddPhotoStep() {
                   videoConstraints={VIDEO_CONSTRAINTS}
                   onUserMedia={handleUserMedia}
                   onUserMediaError={handleUserMediaError}
-                  className="h-full w-full object-cover"
+                  className="absolute inset-0 h-full w-full object-cover object-center"
                 />
               ) : showCameraPlaceholder ? (
                 <div className="flex h-full w-full items-center justify-center">
                   <p className="font-mono text-sm text-white/60">
-                    {sessionStarted ? "Starting camera..." : "Tap Capture to start"}
+                    {sessionStarted ? "Starting camera..." : "Tap Capture to Start"}
                   </p>
                 </div>
               ) : null}
@@ -218,44 +282,67 @@ export function AddPhotoStep() {
               <CameraFlash show={showFlash} />
             </div>
 
-            <div className="flex justify-center gap-2">
-              {photos.map((photo, index) => (
-                <button
-                  key={index}
-                  type="button"
-                  onClick={() => photo && handleThumbnailClick(index)}
-                  onMouseEnter={() => photo && setHoverSlotIndex(index)}
-                  onMouseLeave={() => setHoverSlotIndex(null)}
-                  className="relative h-14 w-14 overflow-hidden rounded-sm bg-[#202020]"
-                >
-                  {photo ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={photo}
-                      alt={`Thumbnail ${index + 1}`}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : null}
+            <div
+              className="flex items-center justify-center overflow-hidden"
+              style={{
+                width: ADD_PHOTO_LAYOUT.viewfinder.width,
+                gap: ADD_PHOTO_LAYOUT.thumbnail.gap,
+              }}
+            >
+              {photos.map((photo, index) => {
+                const slot = frame.slots[index];
+                const size = thumbnailSizes[index];
+                if (!slot || !size) return null;
 
-                  {hoverSlotIndex === index && photo ? (
-                    <div className="absolute inset-0 flex items-center justify-center bg-[#202020]/80">
-                      <Image
-                        src="/figma/icons/camera-white.svg"
-                        alt=""
-                        width={20}
-                        height={20}
-                      />
-                    </div>
-                  ) : null}
-                </button>
-              ))}
+                return (
+                  <div
+                    key={index}
+                    onMouseEnter={() => photo && setHoverSlotIndex(index)}
+                    onMouseLeave={() => setHoverSlotIndex(null)}
+                  >
+                    <SlotPhoto
+                      photo={photo}
+                      slot={slot}
+                      frameAspectRatio={frame.aspectRatio}
+                      height={size.height}
+                      width={size.width}
+                      className={photo ? "cursor-pointer" : undefined}
+                      onClick={
+                        photo && !isCapturing && !showFlash
+                          ? () => handleThumbnailClick(index)
+                          : undefined
+                      }
+                      overlay={
+                        photo &&
+                        (hoverSlotIndex === index ||
+                          (isRetaking && activeSlotIndex === index)) ? (
+                          <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-[#202020]/80">
+                            <Image
+                              src="/figma/icons/camera-white.svg"
+                              alt=""
+                              width={20}
+                              height={20}
+                            />
+                          </div>
+                        ) : undefined
+                      }
+                    />
+                  </div>
+                );
+              })}
             </div>
 
             <p className="font-mono text-center text-xs text-black">
               {isCountingDown || isCapturing
                 ? "capturing the moments..."
                 : allPhotosFilled
-                  ? "select a photo to retake or click next to choose your frame !"
+                  ? (
+                      <>
+                        select a photo to retake or
+                        <br />
+                        click next to choose your frame !
+                      </>
+                    )
                   : isRetaking
                     ? `retaking photo ${(activeSlotIndex ?? 0) + 1}...`
                     : `photo ${targetIndex + 1} of ${frame.photoCount}`}
@@ -273,9 +360,7 @@ export function AddPhotoStep() {
             />
 
             <p className="font-mono text-center text-xs text-black">
-              {allPhotosFilled
-                ? "add your photos !"
-                : "add your photos !"}
+              add your photos !
             </p>
           </>
         )}
