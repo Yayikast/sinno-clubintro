@@ -3,7 +3,7 @@
 import { usePhotobooth } from "@/context/PhotoboothProvider";
 import { FRAMES } from "@/lib/frames";
 import { getLandingPreviewSize, LANDING_LAYOUT } from "@/lib/landingLayout";
-import { PageShell, PinkButton } from "@/components/ui/PageShell";
+import { PageContent, PageShell, PinkButton, ActionFooter } from "@/components/ui/PageShell";
 import { FramePreview, FrameSelector } from "@/components/ui/FramePreview";
 
 export function LandingStep() {
@@ -17,28 +17,24 @@ export function LandingStep() {
       paddingX={LANDING_LAYOUT.paddingX}
       paddingY={LANDING_LAYOUT.paddingY}
       footer={
-        <div className="flex justify-center">
-          <PinkButton
-            onClick={confirmFrameSelection}
-            textSize={LANDING_LAYOUT.buttonTextSize}
-            width={LANDING_LAYOUT.buttonWidth}
-            height={LANDING_LAYOUT.buttonHeight}
-            borderRadius={LANDING_LAYOUT.buttonRadius}
-          >
-            Select
-          </PinkButton>
-        </div>
+        <ActionFooter>
+          <PinkButton onClick={confirmFrameSelection}>Select</PinkButton>
+        </ActionFooter>
       }
     >
-      <div
-        className="flex min-h-0 flex-1 flex-col items-center"
+      <PageContent
+        className="min-h-0 w-full min-w-0 flex-1"
         style={{ marginTop: LANDING_LAYOUT.headerToPreviewGap }}
       >
         <div className="flex min-h-0 flex-1 items-center justify-center">
           <FramePreview
             frame={frame}
-            width={previewSize.width}
-            height={previewSize.height}
+            width={Math.min(previewSize.width, LANDING_LAYOUT.frameWidth - LANDING_LAYOUT.paddingX * 2)}
+            height={
+              (Math.min(previewSize.width, LANDING_LAYOUT.frameWidth - LANDING_LAYOUT.paddingX * 2) /
+                previewSize.width) *
+              previewSize.height
+            }
             captionSize={LANDING_LAYOUT.captionSize}
             showPlaceholders={false}
           />
@@ -61,7 +57,7 @@ export function LandingStep() {
           className="shrink-0"
           style={{ height: LANDING_LAYOUT.selectorToButtonGap }}
         />
-      </div>
+      </PageContent>
     </PageShell>
   );
 }

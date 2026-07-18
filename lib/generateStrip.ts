@@ -1,4 +1,10 @@
 import type { FrameConfig } from "@/types/photobooth";
+import {
+  applyCanvasFill,
+  getCaptionFillStyle,
+  isGradientFill,
+  isPatternFill,
+} from "@/lib/frameFill";
 
 const EXPORT_WIDTH = 1200;
 
@@ -62,6 +68,37 @@ async function loadFrameSvg(frameColor: string, svgPath: string): Promise<HTMLIm
   }
 }
 
+async function drawFrameOverlay(
+  ctx: CanvasRenderingContext2D,
+  frameColor: string,
+  svgPath: string,
+  width: number,
+  height: number,
+): Promise<void> {
+  const mask = await loadFrameSvg("#000000", svgPath);
+
+  if (
+    !isPatternFill(frameColor) &&
+    !isGradientFill(frameColor) &&
+    frameColor.startsWith("#")
+  ) {
+    const colored = await loadFrameSvg(frameColor, svgPath);
+    ctx.drawImage(colored, 0, 0, width, height);
+    return;
+  }
+
+  const overlay = document.createElement("canvas");
+  overlay.width = width;
+  overlay.height = height;
+  const overlayCtx = overlay.getContext("2d");
+  if (!overlayCtx) return;
+
+  await applyCanvasFill(overlayCtx, frameColor, width, height);
+  overlayCtx.globalCompositeOperation = "destination-in";
+  overlayCtx.drawImage(mask, 0, 0, width, height);
+  ctx.drawImage(overlay, 0, 0, width, height);
+}
+
 export async function generateStrip(
   photos: string[],
   frame: FrameConfig,
@@ -81,8 +118,8 @@ export async function generateStrip(
     throw new Error("Canvas not supported");
   }
 
-  ctx.fillStyle = frameColor;
-  ctx.fillRect(0, 0, stripWidth, stripHeight);
+
+  await applyCanvasFill(ctx, frameColor, stripWidth, stripHeight);
 
   const images = await Promise.all(photos.map((photo) => loadImage(photo)));
 
@@ -103,12 +140,11 @@ export async function generateStrip(
     ctx.restore();
   });
 
-  const frameOverlay = await loadFrameSvg(frameColor, frame.svgPath);
-  ctx.drawImage(frameOverlay, 0, 0, stripWidth, stripHeight);
+  await drawFrameOverlay(ctx, frameColor, frame.svgPath, stripWidth, stripHeight);
 
   if (captionText.trim()) {
     const fontSize = Math.round(stripWidth * 0.045);
-    ctx.fillStyle = textColor;
+    ctx.fillStyle = getCaptionFillStyle(ctx, textColor, stripWidth);
     ctx.font = `${fontSize}px Caveat, cursive`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";

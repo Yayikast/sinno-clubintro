@@ -1,4 +1,5 @@
 import type { ColorSwatch, FrameConfig, FrameId } from "@/types/photobooth";
+import { COLOR_PICKER_SWATCH_ID } from "@/lib/frameFill";
 
 export const FRAMES: FrameConfig[] = [
   {
@@ -91,23 +92,31 @@ export const DEFAULT_TEXT_COLOR = "#FFFFFF";
 export const DEFAULT_CAPTION = "moments of 2026";
 
 export const FRAME_COLOR_SWATCHES: ColorSwatch[] = [
+  { id: "picker", label: "Color picker", value: COLOR_PICKER_SWATCH_ID },
   { id: "black", label: "Black", value: "#000000" },
   { id: "gray", label: "Gray", value: "#9E9E9E" },
   { id: "white", label: "White", value: "#FFFFFF" },
   { id: "dark-red", label: "Dark Red", value: "#8B3A3A" },
-  { id: "dark-teal", label: "Dark Teal", value: "#2F5F5F" },
+  { id: "dark-navy", label: "Dark Navy", value: "#1E3A5F" },
   { id: "dark-green", label: "Dark Green", value: "#2D5016" },
   { id: "dark-brown", label: "Dark Brown", value: "#5C4033" },
   { id: "pink", label: "Pink", value: "#FFA8BD" },
   { id: "light-pink", label: "Light Pink", value: "#FFDEE6" },
+  { id: "floral", label: "Floral", value: "pattern:floral" },
+  { id: "hearts", label: "Hearts", value: "pattern:hearts" },
+  { id: "purple-sky", label: "Purple Sky", value: "pattern:purple-sky" },
+  { id: "clouds", label: "Clouds", value: "pattern:clouds" },
+  { id: "water", label: "Water", value: "pattern:water" },
+  { id: "plaid", label: "Plaid", value: "pattern:plaid" },
 ];
 
 export const TEXT_COLOR_SWATCHES: ColorSwatch[] = [
+  { id: "picker", label: "Color picker", value: COLOR_PICKER_SWATCH_ID },
   { id: "black", label: "Black", value: "#000000" },
   { id: "gray", label: "Gray", value: "#9E9E9E" },
   { id: "white", label: "White", value: "#FFFFFF" },
   { id: "dark-red", label: "Dark Red", value: "#8B3A3A" },
-  { id: "dark-teal", label: "Dark Teal", value: "#2F5F5F" },
+  { id: "dark-navy", label: "Dark Navy", value: "#1E3A5F" },
   { id: "dark-green", label: "Dark Green", value: "#2D5016" },
   { id: "dark-brown", label: "Dark Brown", value: "#5C4033" },
   { id: "peach", label: "Peach", value: "#FFCBA4" },

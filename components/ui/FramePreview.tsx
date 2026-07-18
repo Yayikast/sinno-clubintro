@@ -1,7 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import { CoverImage } from "@/components/ui/SlotPhoto";
+import { useAvailableContentWidth } from "@/hooks/useAvailableContentWidth";
+import { getFrameSelectorLayout } from "@/lib/landingLayout";
 import type { FrameConfig } from "@/types/photobooth";
 
 interface FramePreviewProps {
@@ -18,8 +21,12 @@ interface FramePreviewProps {
   size?: "sm" | "md" | "lg";
   captionSize?: number;
   onSlotClick?: (index: number) => void;
+  /** Slot currently targeted for upload / replace. */
+  activeSlotIndex?: number | null;
   hoverSlotIndex?: number | null;
   showPlaceholders?: boolean;
+  placeholderBg?: string;
+  overlayBg?: string;
 }
 
 export function FramePreview({
@@ -33,10 +40,15 @@ export function FramePreview({
   size = "md",
   captionSize = 8,
   onSlotClick,
+  activeSlotIndex = null,
   hoverSlotIndex = null,
   showPlaceholders = false,
+  placeholderBg = "#2a2a2a",
+  overlayBg = "rgba(32, 32, 32, 0.8)",
 }: FramePreviewProps) {
   const slots = photos ?? Array.from({ length: frame.photoCount }, () => null);
+  const [internalHoverIndex, setInternalHoverIndex] = useState<number | null>(null);
+  const hasAnyPhoto = slots.some(Boolean);
 
   const sizeClasses = {
     sm: "max-w-[140px]",
@@ -44,13 +56,15 @@ export function FramePreview({
     lg: "max-w-[280px]",
   };
 
-  const widthStyle = width ? { width, maxWidth: width } : undefined;
+  const widthStyle = width
+    ? { width, maxWidth: `min(${width}px, 100%)` }
+    : undefined;
   const heightStyle = height ? { height, maxHeight: height } : undefined;
   const widthClass = width ? "" : sizeClasses[size];
 
   return (
     <div
-      className={`relative mx-auto shrink-0 ${widthClass} ${className}`}
+      className={`relative mx-auto w-full min-w-0 max-w-full shrink-0 ${widthClass} ${className}`}
       style={{
         ...widthStyle,
         ...heightStyle,
@@ -61,7 +75,13 @@ export function FramePreview({
         const slot = frame.slots[index];
         if (!slot) return null;
 
-        const isHovered = hoverSlotIndex === index;
+        const isActive = activeSlotIndex === index;
+        const isHovered =
+          hoverSlotIndex === index ||
+          (hoverSlotIndex === null && internalHoverIndex === index);
+        const showGalleryOverlay =
+          onSlotClick &&
+          (isHovered || (isActive && !photo && hasAnyPhoto));
         const SlotWrapper = onSlotClick ? "button" : "div";
 
         return (
@@ -69,18 +89,35 @@ export function FramePreview({
             key={index}
             type={onSlotClick ? "button" : undefined}
             onClick={onSlotClick ? () => onSlotClick(index) : undefined}
-            className={`absolute overflow-hidden ${onSlotClick ? "cursor-pointer" : ""}`}
+            onMouseEnter={
+              onSlotClick ? () => setInternalHoverIndex(index) : undefined
+            }
+            onMouseLeave={
+              onSlotClick ? () => setInternalHoverIndex(null) : undefined
+            }
+            aria-label={
+              onSlotClick
+                ? photo
+                  ? `Replace photo ${index + 1}`
+                  : `Add photo ${index + 1}`
+                : undefined
+            }
+            className={`absolute m-0 overflow-hidden border-0 p-0 ${onSlotClick ? "cursor-pointer" : ""}`}
             style={{
               left: `${slot.x * 100}%`,
               top: `${slot.y * 100}%`,
               width: `${slot.width * 100}%`,
               height: `${slot.height * 100}%`,
+              minHeight: 0,
             }}
           >
             {photo ? (
               <CoverImage src={photo} alt={`Photo ${index + 1}`} />
             ) : showPlaceholders ? (
-              <div className="flex h-full w-full items-center justify-center bg-[#2a2a2a]">
+              <div
+                className="flex h-full w-full items-center justify-center"
+                style={{ backgroundColor: placeholderBg }}
+              >
                 <Image
                   src="/figma/icons/gallery.svg"
                   alt=""
@@ -93,8 +130,11 @@ export function FramePreview({
               <div className="h-full w-full bg-[#FFDEE6]" />
             )}
 
-            {isHovered ? (
-              <div className="absolute inset-0 flex items-center justify-center bg-[#202020]/80">
+            {showGalleryOverlay ? (
+              <div
+                className="absolute inset-0 flex items-center justify-center"
+                style={{ backgroundColor: overlayBg }}
+              >
                 <Image
                   src="/figma/icons/gallery.svg"
                   alt=""
@@ -151,8 +191,18 @@ export function FrameSelector({
   selectedRadius = 4,
   gap = 8,
 }: FrameSelectorProps) {
+  const availableContentWidth = useAvailableContentWidth();
+  const layout = getFrameSelectorLayout(frames.length, availableContentWidth);
+  const size = layout.size || selectedSize;
+  const rowGap = layout.gap || gap;
+  const iconHeight = layout.iconHeight || itemHeight;
+  const radius = layout.radius || selectedRadius;
+
   return (
-    <div className="flex items-center justify-center" style={{ gap }}>
+    <div
+      className="flex w-full min-w-0 items-center justify-center"
+      style={{ gap: rowGap, maxWidth: availableContentWidth }}
+    >
       {frames.map((frame) => {
         const isSelected = selectedId === frame.id;
 
@@ -162,21 +212,33 @@ export function FrameSelector({
             type="button"
             onClick={() => onSelect(frame.id)}
             aria-label={frame.label}
-            className="flex items-center justify-center transition-colors"
+            aria-pressed={isSelected}
+            className="relative m-0 flex shrink-0 items-center justify-center overflow-hidden border-0 p-0 transition-opacity"
             style={{
-              width: selectedSize,
-              height: selectedSize,
-              borderRadius: selectedRadius,
-              backgroundColor: isSelected ? selectedBg : "transparent",
+              width: size,
+              height: size,
+              minWidth: size,
+              minHeight: size,
+              borderRadius: radius,
             }}
           >
+            {isSelected ? (
+              <span
+                className="pointer-events-none absolute inset-0"
+                style={{
+                  borderRadius: radius,
+                  backgroundColor: selectedBg,
+                }}
+                aria-hidden
+              />
+            ) : null}
             <img
               src={frame.iconPath}
               alt=""
-              className="w-auto object-contain"
+              className="relative z-[1] w-auto object-contain"
               style={{
                 opacity: isSelected ? 1 : 0.55,
-                height: itemHeight,
+                height: iconHeight,
               }}
             />
           </button>
