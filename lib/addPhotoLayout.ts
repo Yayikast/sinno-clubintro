@@ -25,7 +25,6 @@ export const ADD_PHOTO_LAYOUT = {
   },
   thumbnail: {
     height: 70,
-    maxRowHeight: 80,
     gap: 8,
     widthsByFrame: {
       frame1: [45, 45],
@@ -78,13 +77,12 @@ export interface AddPhotoThumbnailSize {
 
 /**
  * Thumbnails use h:w = 70:figmaWidth per slot at full size.
- * Never exceeds `maxRowWidth` (viewfinder) or `maxRowHeight`; scales down when needed.
+ * If the row (widths + gaps) exceeds the viewfinder width, scale down uniformly
+ * so everything fits with equal heights.
  */
 export function getAddPhotoThumbnailSizes(
   frameId: keyof typeof ADD_PHOTO_LAYOUT.thumbnail.widthsByFrame,
   maxRowWidth: number = ADD_PHOTO_LAYOUT.viewfinder.width,
-  fillWidth = false,
-  maxRowHeight: number = ADD_PHOTO_LAYOUT.thumbnail.maxRowHeight,
 ): AddPhotoThumbnailSize[] {
   const { thumbnail } = ADD_PHOTO_LAYOUT;
   const baseWidths = [...thumbnail.widthsByFrame[frameId]];
@@ -93,33 +91,21 @@ export function getAddPhotoThumbnailSizes(
 
   const thumbnailsWidth = baseWidths.reduce((sum, width) => sum + width, 0);
   const gapsWidth = Math.max(0, baseWidths.length - 1) * gap;
-  const availableWidth = Math.max(0, maxRowWidth - gapsWidth);
-  const scaleWidth = availableWidth / thumbnailsWidth;
-  const scaleHeight = maxRowHeight / baseHeight;
+  const totalRowWidth = thumbnailsWidth + gapsWidth;
 
-  let scale = Math.min(scaleWidth, scaleHeight);
-  if (!fillWidth) {
-    scale = Math.min(scale, 1);
+  if (totalRowWidth <= maxRowWidth) {
+    return baseWidths.map((width) => ({ width, height: baseHeight }));
   }
 
+  const availableWidth = maxRowWidth - gapsWidth;
+  const scale = availableWidth / thumbnailsWidth;
   const height = baseHeight * scale;
+
   const scaled = baseWidths.map((width) => width * scale);
   const rounded = scaled.map((width) => Math.floor(width * 100) / 100);
   const widthTotal = rounded.reduce((sum, width) => sum + width, 0);
-  const targetWidth = thumbnailsWidth * scale;
-  const widthRemainder = Math.round((targetWidth - widthTotal) * 100) / 100;
+  const widthRemainder = Math.round((availableWidth - widthTotal) * 100) / 100;
   rounded[rounded.length - 1] += widthRemainder;
 
   return rounded.map((width) => ({ width, height }));
-}
-
-/** Total rendered width of a thumbnail row including gaps. */
-export function getAddPhotoThumbnailRowWidth(
-  sizes: AddPhotoThumbnailSize[],
-  gap: number = ADD_PHOTO_LAYOUT.thumbnail.gap,
-): number {
-  if (sizes.length === 0) return 0;
-  const thumbnailsWidth = sizes.reduce((sum, size) => sum + size.width, 0);
-  const gapsWidth = Math.max(0, sizes.length - 1) * gap;
-  return thumbnailsWidth + gapsWidth;
 }

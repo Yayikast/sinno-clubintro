@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePhotobooth } from "@/context/PhotoboothProvider";
-import { saveStrip } from "@/lib/generateStrip";
+import { downloadStrip } from "@/lib/generateStrip";
 import {
   getPrintStripHeight,
   getPrintStripStartOffset,
@@ -12,34 +12,20 @@ import {
   getPrinterTopInset,
   PRINT_LAYOUT,
 } from "@/lib/printLayout";
-import { scaleBoxToFit } from "@/lib/responsiveLayout";
 import { useAvailableContentWidth } from "@/hooks/useAvailableContentWidth";
-import { useViewportLayout } from "@/hooks/useViewportLayout";
 import { PageContent, PageShell, PinkButton } from "@/components/ui/PageShell";
 
 export function PrintStep() {
   const { finalStripUrl, frame, reset, goBack } = usePhotobooth();
   const [isPrinting, setIsPrinting] = useState(true);
   const availableContentWidth = useAvailableContentWidth();
-  const { contentWidth, contentHeight } = useViewportLayout({ hasFooter: false });
-  const previewWidth = getPrintStripWidth(
-    Math.min(PRINT_LAYOUT.contentWidth, contentWidth, availableContentWidth),
-  );
+  const contentWidth = Math.min(PRINT_LAYOUT.contentWidth, availableContentWidth);
+  const previewWidth = getPrintStripWidth(contentWidth);
   const stripHeight = useMemo(
     () => getPrintStripHeight(previewWidth, frame.aspectRatio),
     [frame.aspectRatio, previewWidth],
   );
-  const stripDimensions = useMemo(
-    () =>
-      scaleBoxToFit(
-        previewWidth,
-        stripHeight,
-        previewWidth,
-        Math.max(140, contentHeight * 0.52),
-      ),
-    [contentHeight, previewWidth, stripHeight],
-  );
-  const stripStartOffset = getPrintStripStartOffset(stripDimensions.height);
+  const stripStartOffset = getPrintStripStartOffset(stripHeight);
 
   useEffect(() => {
     if (!finalStripUrl) return;
@@ -53,13 +39,13 @@ export function PrintStep() {
 
   const handleDownload = () => {
     if (!finalStripUrl) return;
-    void saveStrip(finalStripUrl);
+    downloadStrip(finalStripUrl);
   };
 
   return (
-    <PageShell showBack onBack={goBack} mainClassName="min-h-0">
+    <PageShell showBack onBack={goBack} mainClassName="min-h-0 overflow-visible">
       <PageContent
-        className="flex min-h-0 w-full flex-1 flex-col"
+        className="flex h-full min-h-0 w-full flex-1 flex-col !overflow-visible"
         style={{ marginTop: PRINT_LAYOUT.headerToTitleGap }}
       >
         <h2
@@ -70,17 +56,15 @@ export function PrintStep() {
         </h2>
 
         <div
-          className="mx-auto flex min-h-0 w-full flex-1 flex-col items-center"
+          className="mx-auto flex min-h-0 w-full flex-1 flex-col items-center overflow-visible"
           style={{ marginTop: PRINT_LAYOUT.titleToContentGap }}
         >
           <div
-            className="relative shrink-0"
+            className="relative shrink-0 overflow-visible"
             style={{
               width: PRINT_LAYOUT.printerWidth,
               minHeight:
-                getPrinterTopInset() +
-                PRINT_LAYOUT.stripSlotTop +
-                stripDimensions.height,
+                getPrinterTopInset() + PRINT_LAYOUT.stripSlotTop + stripHeight,
               paddingTop: getPrinterTopInset(),
             }}
           >
@@ -107,13 +91,13 @@ export function PrintStep() {
                   className="absolute left-1/2 -translate-x-1/2 overflow-hidden"
                   style={{
                     top: PRINT_LAYOUT.stripSlotTop,
-                    width: stripDimensions.width,
-                    height: stripDimensions.height,
+                    width: previewWidth,
+                    height: stripHeight,
                     zIndex: PRINT_LAYOUT.zIndex.strip,
                   }}
                 >
                   <motion.div
-                    style={{ width: stripDimensions.width }}
+                    style={{ width: previewWidth }}
                     initial={{ y: stripStartOffset }}
                     animate={{ y: 0 }}
                     transition={{
@@ -127,7 +111,7 @@ export function PrintStep() {
                       src={finalStripUrl}
                       alt="Your photostrip"
                       className="block max-w-full rounded-sm object-contain shadow-md"
-                      style={{ width: stripDimensions.width }}
+                      style={{ width: previewWidth }}
                     />
                   </motion.div>
                 </div>

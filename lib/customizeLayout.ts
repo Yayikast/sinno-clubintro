@@ -1,5 +1,4 @@
 import { PAGE_LAYOUT } from "@/lib/pageLayout";
-import { getResponsivePaddingY } from "@/lib/responsiveLayout";
 
 /** Customize page layout tokens from Figma (393×852 frame). */
 export const CUSTOMIZE_LAYOUT = {
@@ -155,7 +154,7 @@ export function getCustomizePreviewMaxHeight(
   );
 
   const reserved =
-    getResponsivePaddingY(viewportHeight) * 2 +
+    PAGE_LAYOUT.paddingY * 2 +
     52 +
     CUSTOMIZE_LAYOUT.headerToTitleGap +
     CUSTOMIZE_LAYOUT.titleSize * 1.2 +

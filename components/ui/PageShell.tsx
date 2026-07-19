@@ -2,10 +2,8 @@
 
 import { ADD_PHOTO_LAYOUT } from "@/lib/addPhotoLayout";
 import { PAGE_LAYOUT } from "@/lib/pageLayout";
-import { getResponsivePaddingY } from "@/lib/responsiveLayout";
-import { useAvailableContentWidth } from "@/hooks/useAvailableContentWidth";
 import Image from "next/image";
-import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 interface PageShellProps {
   children: ReactNode;
@@ -31,32 +29,12 @@ export function PageShell({
   maxWidth = PAGE_LAYOUT.frameWidth,
   paddingX = PAGE_LAYOUT.paddingX,
   paddingY = PAGE_LAYOUT.paddingY,
-  titleClassName = "font-cursive font-normal leading-none text-black",
+  titleClassName = "font-cursive text-[40px] font-normal leading-none text-black",
   subtitleClassName = "font-mono text-[12px] font-normal leading-normal text-black",
   mainClassName = "",
   footerClassName = "",
   footerStyle,
 }: PageShellProps) {
-  const availableContentWidth = useAvailableContentWidth();
-  const [paddingTop, setPaddingTop] = useState(paddingY);
-
-  useEffect(() => {
-    const update = () => {
-      const viewportHeight =
-        window.visualViewport?.height ?? document.documentElement.clientHeight;
-      setPaddingTop(getResponsivePaddingY(viewportHeight, paddingY));
-    };
-
-    update();
-    window.addEventListener("resize", update);
-    window.visualViewport?.addEventListener("resize", update);
-
-    return () => {
-      window.removeEventListener("resize", update);
-      window.visualViewport?.removeEventListener("resize", update);
-    };
-  }, [paddingY]);
-
   return (
     <div className="relative mx-auto flex h-full w-full max-w-full flex-col overflow-hidden">
       <div className="pointer-events-none absolute inset-0 -z-10">
@@ -75,8 +53,8 @@ export function PageShell({
           maxWidth,
           paddingLeft: paddingX,
           paddingRight: paddingX,
-          paddingTop: `max(${paddingTop}px, calc(${paddingTop}px + env(safe-area-inset-top, 0px)))`,
-          paddingBottom: `max(${paddingTop}px, calc(${paddingTop}px + env(safe-area-inset-bottom, 0px)))`,
+          paddingTop: `max(${paddingY}px, calc(${paddingY}px + env(safe-area-inset-top, 0px)))`,
+          paddingBottom: `max(${paddingY}px, calc(${paddingY}px + env(safe-area-inset-bottom, 0px)))`,
         }}
       >
         <header className="relative shrink-0 text-center">
@@ -91,12 +69,12 @@ export function PageShell({
             </button>
           ) : null}
 
-          <h1 className={`${titleClassName} text-[clamp(28px,10vw,40px)]`}>PhotoBooth</h1>
+          <h1 className={titleClassName}>PhotoBooth</h1>
           <p className={subtitleClassName}>- capture the moments -</p>
         </header>
 
         <main
-          className={`flex min-h-0 w-full min-w-0 flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-y-contain ${mainClassName}`}
+          className={`flex min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden ${mainClassName}`}
         >
           {children}
         </main>
@@ -106,7 +84,7 @@ export function PageShell({
             className={`mt-auto flex w-full min-w-0 shrink-0 flex-col items-center overflow-x-hidden ${footerClassName}`}
             style={{
               width: "100%",
-              maxWidth: availableContentWidth,
+              maxWidth: PAGE_LAYOUT.contentWidth,
               marginInline: "auto",
               ...footerStyle,
             }}
@@ -131,12 +109,10 @@ export function PageContent({
   className = "",
   style,
 }: PageContentProps) {
-  const availableContentWidth = useAvailableContentWidth();
-
   return (
     <div
-      className={`mx-auto box-border flex w-full min-w-0 max-w-full flex-col items-stretch ${className}`}
-      style={{ maxWidth: availableContentWidth, ...style }}
+      className={`mx-auto box-border flex w-full min-w-0 max-w-full flex-col items-stretch overflow-hidden ${className}`}
+      style={{ maxWidth: PAGE_LAYOUT.contentWidth, ...style }}
     >
       {children}
     </div>

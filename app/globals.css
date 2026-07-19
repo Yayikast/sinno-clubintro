@@ -24,12 +24,11 @@
 html {
   overflow: hidden;
   max-width: 100%;
-  height: 100dvh;
 }
 
 html,
 body {
-  min-height: 100dvh;
+  height: 100%;
   overscroll-behavior: none;
 }
 
@@ -38,7 +37,6 @@ body {
   color: var(--foreground);
   overflow: hidden;
   max-width: 100%;
-  height: 100dvh;
 }
 
 .font-cursive {
@@ -65,17 +63,4 @@ a {
 input,
 button {
   min-height: 44px;
-}
-
-@media (max-height: 740px) {
-  .customize-layout-row {
-    flex-direction: column;
-    align-items: center;
-  }
-}
-
-@media (max-height: 680px) {
-  .landing-preview-area {
-    flex: 0 1 auto;
-  }
 }

@@ -8,13 +8,10 @@ import {
   CUSTOMIZE_LAYOUT,
   getCustomizeColumnWidths,
   getCustomizeControlsContentWidth,
-  getCustomizePreviewMaxHeight,
 } from "@/lib/customizeLayout";
 import { STRIP_CAPTION_MAX_LENGTH } from "@/lib/stripCaption";
 import { generateStrip } from "@/lib/generateStrip";
-import { scaleBoxToFit } from "@/lib/responsiveLayout";
 import { useAvailableContentWidth } from "@/hooks/useAvailableContentWidth";
-import { useViewportLayout } from "@/hooks/useViewportLayout";
 import {
   ColorSwatchGrid,
   ActionFooter,
@@ -42,25 +39,11 @@ export function CustomizeStep() {
   const debounceRef = useRef<number | null>(null);
   const availableContentWidth = useAvailableContentWidth();
   const contentWidth = Math.min(CUSTOMIZE_LAYOUT.contentWidth, availableContentWidth);
-  const { viewportHeight } = useViewportLayout({ hasFooter: true });
   const { previewWidth } = getCustomizeColumnWidths(contentWidth);
   const { width: controlsContentWidth, swatchSize } = getCustomizeControlsContentWidth(
     FRAME_COLOR_SWATCHES.length,
     TEXT_COLOR_SWATCHES.length,
     contentWidth,
-  );
-  const previewMaxHeight = getCustomizePreviewMaxHeight(
-    viewportHeight,
-    FRAME_COLOR_SWATCHES.length,
-    TEXT_COLOR_SWATCHES.length,
-    contentWidth,
-    swatchSize,
-  );
-  const previewDimensions = scaleBoxToFit(
-    previewWidth,
-    previewWidth / frame.aspectRatio,
-    previewWidth,
-    previewMaxHeight,
   );
 
   useEffect(() => {
@@ -112,7 +95,7 @@ export function CustomizeStep() {
       }
     >
       <PageContent
-        className="flex min-h-0 w-full flex-1 flex-col"
+        className="flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden"
         style={{ marginTop: CUSTOMIZE_LAYOUT.headerToTitleGap }}
       >
         <h2
@@ -123,7 +106,7 @@ export function CustomizeStep() {
         </h2>
 
         <div
-          className="customize-layout-row mx-auto flex w-fit max-w-full shrink-0 items-center"
+          className="mx-auto flex w-fit max-w-full shrink-0 items-center"
           style={{
             marginTop: CUSTOMIZE_LAYOUT.titleToContentGap,
             gap: CUSTOMIZE_LAYOUT.columnGap,
@@ -132,7 +115,7 @@ export function CustomizeStep() {
         >
           <div
             className="flex shrink-0 items-start justify-center overflow-hidden"
-            style={{ width: previewDimensions.width }}
+            style={{ width: previewWidth }}
           >
             {previewUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -140,18 +123,12 @@ export function CustomizeStep() {
                 src={previewUrl}
                 alt="Strip preview"
                 className="max-w-full rounded-sm object-contain shadow-md"
-                style={{
-                  width: previewDimensions.width,
-                  height: previewDimensions.height,
-                }}
+                style={{ width: previewWidth }}
               />
             ) : (
               <div
                 className="w-full rounded-sm bg-black/5"
-                style={{
-                  width: previewDimensions.width,
-                  height: previewDimensions.height,
-                }}
+                style={{ width: previewWidth, aspectRatio: frame.aspectRatio }}
               />
             )}
           </div>

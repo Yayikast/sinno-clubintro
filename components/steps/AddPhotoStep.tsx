@@ -14,7 +14,6 @@ import { ADD_PHOTO_LAYOUT, getAddPhotoThumbnailSizes, getUploadPreviewSize } fro
 import {
   cropPhotoToSlot,
 } from "@/lib/photoDisplay";
-import { scaleBoxToFit } from "@/lib/responsiveLayout";
 import {
   CountdownPicker,
   ActionFooter,
@@ -27,7 +26,7 @@ import { FramePreview } from "@/components/ui/FramePreview";
 import { Countdown } from "@/components/camera/Countdown";
 import { CameraFlash } from "@/components/camera/CameraFlash";
 import { useCountdown } from "@/hooks/useCountdown";
-import { useViewportLayout } from "@/hooks/useViewportLayout";
+import { useAvailableContentWidth } from "@/hooks/useAvailableContentWidth";
 import { useCamera, VIDEO_CONSTRAINTS } from "@/hooks/useCamera";
 import { playShutterSound } from "@/lib/shutterSound";
 
@@ -74,35 +73,22 @@ export function AddPhotoStep() {
     handleUserMediaError,
   } = useCamera({ webcamRef, initialActive: false });
 
-  const { contentWidth, contentHeight } = useViewportLayout({ hasFooter: true });
-  const captureWidth = Math.min(ADD_PHOTO_LAYOUT.viewfinder.width, contentWidth);
-  const captureHeight =
-    (captureWidth / ADD_PHOTO_LAYOUT.viewfinder.width) *
-    ADD_PHOTO_LAYOUT.viewfinder.height;
-  const viewfinderDimensions = scaleBoxToFit(
-    captureWidth,
-    captureHeight,
-    captureWidth,
-    Math.max(180, contentHeight * 0.42),
-  );
+  const availableContentWidth = useAvailableContentWidth();
 
   const thumbnailSizes = getAddPhotoThumbnailSizes(
     frame.id,
-    viewfinderDimensions.width,
-    true,
+    Math.min(ADD_PHOTO_LAYOUT.viewfinder.width, availableContentWidth),
   );
   const uploadPreviewSize = getUploadPreviewSize(frame.aspectRatio);
   const uploadLayout = ADD_PHOTO_LAYOUT.upload;
   const takeSpacing = ADD_PHOTO_LAYOUT.takePhoto;
-  const uploadWidthLimited = Math.min(uploadPreviewSize.width, contentWidth);
-  const uploadHeightFromWidth =
-    (uploadWidthLimited / uploadPreviewSize.width) * uploadPreviewSize.height;
-  const uploadPreviewDimensions = scaleBoxToFit(
-    uploadWidthLimited,
-    uploadHeightFromWidth,
-    contentWidth,
-    Math.max(180, contentHeight * 0.55),
+  const captureWidth = Math.min(
+    ADD_PHOTO_LAYOUT.viewfinder.width,
+    availableContentWidth,
   );
+  const captureHeight =
+    (captureWidth / ADD_PHOTO_LAYOUT.viewfinder.width) *
+    ADD_PHOTO_LAYOUT.viewfinder.height;
 
   const performCapture = useCallback(() => {
     const slotIndex = captureSlotIndexRef.current;
@@ -345,18 +331,18 @@ export function AddPhotoStep() {
             </div>
 
             <div
-              className="mx-auto flex w-full min-w-0 max-w-full flex-col"
+              className="flex w-full min-w-0 max-w-full flex-col items-center"
               style={{
-                width: viewfinderDimensions.width,
-                maxWidth: "100%",
                 marginTop: takeSpacing.countdownToCaptureGap,
                 gap: takeSpacing.viewfinderToThumbnailsGap,
               }}
             >
               <div
-                className="relative w-full overflow-hidden rounded-lg"
+                className="relative w-full max-w-full overflow-hidden rounded-lg"
                 style={{
-                  height: viewfinderDimensions.height,
+                  width: captureWidth,
+                  height: captureHeight,
+                  maxWidth: "100%",
                   backgroundColor: ADD_PHOTO_LAYOUT.viewfinder.background,
                 }}
               >
@@ -406,9 +392,9 @@ export function AddPhotoStep() {
               <div
                 className="flex w-full min-w-0 items-center justify-center overflow-hidden"
                 style={{
+                  width: captureWidth,
+                  maxWidth: "100%",
                   gap: ADD_PHOTO_LAYOUT.thumbnail.gap,
-                  maxWidth: viewfinderDimensions.width,
-                  maxHeight: ADD_PHOTO_LAYOUT.thumbnail.maxRowHeight,
                 }}
               >
                 {photos.map((photo, index) => {
@@ -419,7 +405,6 @@ export function AddPhotoStep() {
                   return (
                     <div
                       key={index}
-                      className="shrink-0"
                       onMouseEnter={() => photo && setHoverSlotIndex(index)}
                       onMouseLeave={() => setHoverSlotIndex(null)}
                     >
@@ -461,8 +446,12 @@ export function AddPhotoStep() {
             <FramePreview
               frame={frame}
               photos={photos}
-              width={uploadPreviewDimensions.width}
-              height={uploadPreviewDimensions.height}
+              width={Math.min(uploadPreviewSize.width, availableContentWidth)}
+              height={
+                (Math.min(uploadPreviewSize.width, availableContentWidth) /
+                  uploadPreviewSize.width) *
+                uploadPreviewSize.height
+              }
               captionText={captionText}
               showPlaceholders
               placeholderBg={uploadLayout.placeholderBg}
