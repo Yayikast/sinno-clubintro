@@ -8,7 +8,28 @@ export const STRIP_CAPTION_MAX_WIDTH_RATIO = 0.86;
 export const STRIP_CAPTION_MAX_LENGTH = 20;
 
 /** Downward nudge for caption text (px at export scale). */
-export const STRIP_CAPTION_Y_OFFSET_PX = 2;
+export const STRIP_CAPTION_Y_OFFSET_PX = 6;
+
+/**
+ * Extra downward nudge on Customize preview and Print export.
+ * Defined in preview pixels (at ~400px strip height) — scaled up for export canvas.
+ */
+export const STRIP_CUSTOMIZE_PRINT_CAPTION_EXTRA_OFFSET_PX = 6;
+
+/** Reference strip height used to convert preview px → export px. */
+export const STRIP_CAPTION_OFFSET_REFERENCE_HEIGHT = 400;
+
+export function scaleStripCaptionOffsetToExport(
+  previewOffsetPx: number,
+  exportStripHeight: number,
+  referencePreviewHeight: number = STRIP_CAPTION_OFFSET_REFERENCE_HEIGHT,
+): number {
+  if (referencePreviewHeight <= 0 || previewOffsetPx === 0) {
+    return previewOffsetPx;
+  }
+
+  return Math.round(previewOffsetPx * (exportStripHeight / referencePreviewHeight));
+}
 
 export const STRIP_CAPTION_FONT_FAMILY = "Caveat, cursive";
 

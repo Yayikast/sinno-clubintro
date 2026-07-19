@@ -9,6 +9,7 @@ import {
   clampStripCaption,
   getFittedStripCaptionFontSize,
   getStripCaptionPositionY,
+  scaleStripCaptionOffsetToExport,
   STRIP_CAPTION_Y_OFFSET_PX,
 } from "@/lib/stripCaption";
 
@@ -111,6 +112,7 @@ export async function generateStrip(
   frameColor: string,
   textColor: string,
   captionText: string,
+  extraCaptionYOffsetPx = 0,
 ): Promise<string> {
   const stripWidth = EXPORT_WIDTH;
   const stripHeight = Math.round(stripWidth / frame.aspectRatio);
@@ -163,14 +165,13 @@ export async function generateStrip(
     ctx.font = `${fontSize}px Caveat, cursive`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
+    const captionYOffset =
+      (frame.captionYOffset ?? STRIP_CAPTION_Y_OFFSET_PX) +
+      scaleStripCaptionOffsetToExport(extraCaptionYOffsetPx, stripHeight);
     ctx.fillText(
       caption,
       stripWidth / 2,
-      getStripCaptionPositionY(
-        frame.captionY,
-        stripHeight,
-        frame.captionYOffset ?? STRIP_CAPTION_Y_OFFSET_PX,
-      ),
+      getStripCaptionPositionY(frame.captionY, stripHeight, captionYOffset),
     );
   }
 
