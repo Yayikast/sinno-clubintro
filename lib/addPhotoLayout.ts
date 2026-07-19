@@ -78,7 +78,7 @@ export interface AddPhotoThumbnailSize {
 
 /**
  * Thumbnails use h:w = 70:figmaWidth per slot at full size.
- * Scales to fit `maxRowWidth` and `maxRowHeight`; optionally scales up to fill row width.
+ * Never exceeds `maxRowWidth` (viewfinder) or `maxRowHeight`; scales down when needed.
  */
 export function getAddPhotoThumbnailSizes(
   frameId: keyof typeof ADD_PHOTO_LAYOUT.thumbnail.widthsByFrame,
@@ -90,7 +90,6 @@ export function getAddPhotoThumbnailSizes(
   const baseWidths = [...thumbnail.widthsByFrame[frameId]];
   const baseHeight = thumbnail.height;
   const gap = thumbnail.gap;
-  const minHeight = 44;
 
   const thumbnailsWidth = baseWidths.reduce((sum, width) => sum + width, 0);
   const gapsWidth = Math.max(0, baseWidths.length - 1) * gap;
@@ -98,25 +97,16 @@ export function getAddPhotoThumbnailSizes(
   const scaleWidth = availableWidth / thumbnailsWidth;
   const scaleHeight = maxRowHeight / baseHeight;
 
-  let scale = 1;
-  if (fillWidth) {
-    scale = Math.min(scaleWidth, scaleHeight);
-  } else if (thumbnailsWidth * scale + gapsWidth > maxRowWidth) {
-    scale = Math.min(scaleWidth, scaleHeight);
-  } else {
-    scale = Math.min(1, scaleHeight);
+  let scale = Math.min(scaleWidth, scaleHeight);
+  if (!fillWidth) {
+    scale = Math.min(scale, 1);
   }
 
-  let height = baseHeight * scale;
-  if (height < minHeight) {
-    height = minHeight;
-    scale = height / baseHeight;
-  }
-
+  const height = baseHeight * scale;
   const scaled = baseWidths.map((width) => width * scale);
   const rounded = scaled.map((width) => Math.floor(width * 100) / 100);
   const widthTotal = rounded.reduce((sum, width) => sum + width, 0);
-  const targetWidth = Math.min(availableWidth, thumbnailsWidth * scale);
+  const targetWidth = thumbnailsWidth * scale;
   const widthRemainder = Math.round((targetWidth - widthTotal) * 100) / 100;
   rounded[rounded.length - 1] += widthRemainder;
 

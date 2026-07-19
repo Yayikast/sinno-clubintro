@@ -10,7 +10,7 @@ import Image from "next/image";
 import Webcam from "react-webcam";
 import { SlotPhoto } from "@/components/ui/SlotPhoto";
 import { usePhotobooth } from "@/context/PhotoboothProvider";
-import { ADD_PHOTO_LAYOUT, getAddPhotoThumbnailRowWidth, getAddPhotoThumbnailSizes, getUploadPreviewSize } from "@/lib/addPhotoLayout";
+import { ADD_PHOTO_LAYOUT, getAddPhotoThumbnailSizes, getUploadPreviewSize } from "@/lib/addPhotoLayout";
 import {
   cropPhotoToSlot,
 } from "@/lib/photoDisplay";
@@ -91,9 +91,6 @@ export function AddPhotoStep() {
     viewfinderDimensions.width,
     true,
   );
-  const thumbnailRowWidth = getAddPhotoThumbnailRowWidth(thumbnailSizes);
-  const thumbnailRowScrollable =
-    thumbnailRowWidth > viewfinderDimensions.width + 0.5;
   const uploadPreviewSize = getUploadPreviewSize(frame.aspectRatio);
   const uploadLayout = ADD_PHOTO_LAYOUT.upload;
   const takeSpacing = ADD_PHOTO_LAYOUT.takePhoto;
@@ -407,15 +404,11 @@ export function AddPhotoStep() {
               </div>
 
               <div
-                className={`flex w-full min-w-0 items-center ${
-                  thumbnailRowScrollable
-                    ? "justify-start overflow-x-auto overscroll-x-contain"
-                    : "justify-center overflow-hidden"
-                }`}
+                className="flex w-full min-w-0 items-center justify-center overflow-hidden"
                 style={{
                   gap: ADD_PHOTO_LAYOUT.thumbnail.gap,
+                  maxWidth: viewfinderDimensions.width,
                   maxHeight: ADD_PHOTO_LAYOUT.thumbnail.maxRowHeight,
-                  WebkitOverflowScrolling: "touch",
                 }}
               >
                 {photos.map((photo, index) => {
