@@ -3,6 +3,8 @@
 import { usePhotobooth } from "@/context/PhotoboothProvider";
 import { FRAMES } from "@/lib/frames";
 import { getLandingPreviewSize, LANDING_LAYOUT } from "@/lib/landingLayout";
+import { scaleBoxToFit } from "@/lib/responsiveLayout";
+import { useViewportLayout } from "@/hooks/useViewportLayout";
 import { PageContent, PageShell, PinkButton, ActionFooter } from "@/components/ui/PageShell";
 import { FramePreview, FrameSelector } from "@/components/ui/FramePreview";
 
@@ -10,6 +12,19 @@ export function LandingStep() {
   const { selectedFrameId, selectFrameId, confirmFrameSelection } = usePhotobooth();
   const frame = FRAMES.find((item) => item.id === selectedFrameId) ?? FRAMES[2];
   const previewSize = getLandingPreviewSize(frame.aspectRatio);
+  const { contentWidth, contentHeight } = useViewportLayout({
+    hasFooter: true,
+    designPaddingY: LANDING_LAYOUT.paddingY,
+  });
+  const widthLimited = Math.min(previewSize.width, contentWidth);
+  const heightFromWidth =
+    (widthLimited / previewSize.width) * previewSize.height;
+  const previewDimensions = scaleBoxToFit(
+    widthLimited,
+    heightFromWidth,
+    contentWidth,
+    Math.max(180, contentHeight * 0.58),
+  );
 
   return (
     <PageShell
@@ -26,15 +41,11 @@ export function LandingStep() {
         className="min-h-0 w-full min-w-0 flex-1"
         style={{ marginTop: LANDING_LAYOUT.headerToPreviewGap }}
       >
-        <div className="flex min-h-0 flex-1 items-center justify-center">
+        <div className="landing-preview-area flex min-h-0 flex-1 items-center justify-center">
           <FramePreview
             frame={frame}
-            width={Math.min(previewSize.width, LANDING_LAYOUT.frameWidth - LANDING_LAYOUT.paddingX * 2)}
-            height={
-              (Math.min(previewSize.width, LANDING_LAYOUT.frameWidth - LANDING_LAYOUT.paddingX * 2) /
-                previewSize.width) *
-              previewSize.height
-            }
+            width={previewDimensions.width}
+            height={previewDimensions.height}
             showPlaceholders={false}
           />
         </div>
