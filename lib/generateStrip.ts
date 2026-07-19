@@ -5,6 +5,10 @@ import {
   isGradientFill,
   isPatternFill,
 } from "@/lib/frameFill";
+import {
+  clampStripCaption,
+  getFittedStripCaptionFontSize,
+} from "@/lib/stripCaption";
 
 const EXPORT_WIDTH = 1200;
 
@@ -143,13 +147,22 @@ export async function generateStrip(
   await drawFrameOverlay(ctx, frameColor, frame.svgPath, stripWidth, stripHeight);
 
   if (captionText.trim()) {
-    const fontSize = Math.round(stripWidth * 0.045);
+    const caption = clampStripCaption(captionText).trim();
+    const fontSize = getFittedStripCaptionFontSize(
+      stripWidth,
+      caption,
+      frame.captionFontSizeScale ?? 1,
+      (size) => {
+      ctx.font = `${size}px Caveat, cursive`;
+      return ctx.measureText(caption).width;
+    },
+    );
     ctx.fillStyle = getCaptionFillStyle(ctx, textColor, stripWidth);
     ctx.font = `${fontSize}px Caveat, cursive`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(
-      captionText,
+      caption,
       stripWidth / 2,
       frame.captionY * stripHeight,
     );

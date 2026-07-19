@@ -2,6 +2,7 @@
 
 import {
   useCallback,
+  useEffect,
   useRef,
   useState,
 } from "react";
@@ -51,9 +52,15 @@ export function AddPhotoStep() {
   const webcamRef = useRef<Webcam>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const captureSlotIndexRef = useRef(0);
+  const captureQueueRef = useRef<number[]>([]);
+  const startCountdownRef = useRef<() => void>(() => {});
   const [sessionStarted, setSessionStarted] = useState(false);
   const [showFlash, setShowFlash] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
+  const [captureSessionActive, setCaptureSessionActive] = useState(false);
+  const [batchCaptureMeta, setBatchCaptureMeta] = useState<{ pos: number; total: number } | null>(
+    null,
+  );
   const [hoverSlotIndex, setHoverSlotIndex] = useState<number | null>(null);
 
   const {
@@ -67,14 +74,6 @@ export function AddPhotoStep() {
   } = useCamera({ webcamRef, initialActive: false });
 
   const availableContentWidth = useAvailableContentWidth();
-
-  const firstEmptyIndex = photos.findIndex((photo) => photo === null);
-  const targetIndex =
-    activeSlotIndex !== null
-      ? activeSlotIndex
-      : firstEmptyIndex === -1
-        ? 0
-        : firstEmptyIndex;
 
   const thumbnailSizes = getAddPhotoThumbnailSizes(
     frame.id,
@@ -91,12 +90,15 @@ export function AddPhotoStep() {
     (captureWidth / ADD_PHOTO_LAYOUT.viewfinder.width) *
     ADD_PHOTO_LAYOUT.viewfinder.height;
 
-  captureSlotIndexRef.current = targetIndex;
-
   const performCapture = useCallback(() => {
     const slotIndex = captureSlotIndexRef.current;
     const slot = frame.slots[slotIndex];
-    if (!slot) return;
+    if (!slot) {
+      captureQueueRef.current = [];
+      setBatchCaptureMeta(null);
+      setCaptureSessionActive(false);
+      return;
+    }
 
     setIsCapturing(true);
     setShowFlash(true);
@@ -109,23 +111,41 @@ export function AddPhotoStep() {
 
         if (!screenshot) {
           setIsCapturing(false);
+          captureQueueRef.current = [];
+          setBatchCaptureMeta(null);
+          setCaptureSessionActive(false);
           return;
         }
 
         try {
           const cropped = await cropPhotoToSlot(screenshot, slot, frame.aspectRatio);
           setPhotoAtIndex(slotIndex, cropped);
-          setActiveSlotIndex(null);
-          setIsRetaking(false);
         } catch {
           setPhotoAtIndex(slotIndex, screenshot);
         } finally {
           setIsCapturing(false);
         }
+
+        const queue = captureQueueRef.current;
+        const queueIndex = queue.indexOf(slotIndex);
+        if (queueIndex >= 0 && queueIndex < queue.length - 1) {
+          const nextSlot = queue[queueIndex + 1];
+          captureSlotIndexRef.current = nextSlot;
+          setBatchCaptureMeta({ pos: queueIndex + 2, total: queue.length });
+          window.setTimeout(() => startCountdownRef.current(), 600);
+          return;
+        }
+
+        captureQueueRef.current = [];
+        setBatchCaptureMeta(null);
+        setCaptureSessionActive(false);
+        setActiveSlotIndex(null);
+        setIsRetaking(false);
       })();
     }, 150);
   }, [
     capturePhoto,
+    frame.aspectRatio,
     frame.slots,
     setActiveSlotIndex,
     setIsRetaking,
@@ -138,10 +158,17 @@ export function AddPhotoStep() {
       onComplete: performCapture,
     });
 
-  const handleCaptureClick = () => {
-    if (isCapturing || isCountingDown || showFlash) return;
+  useEffect(() => {
+    startCountdownRef.current = startCountdown;
+  }, [startCountdown]);
 
-    captureSlotIndexRef.current = targetIndex;
+  const beginCaptureQueue = (queue: number[]) => {
+    if (queue.length === 0) return;
+
+    captureQueueRef.current = queue;
+    captureSlotIndexRef.current = queue[0];
+    setBatchCaptureMeta({ pos: 1, total: queue.length });
+    setCaptureSessionActive(true);
     setActiveSlotIndex(null);
     setIsRetaking(false);
 
@@ -153,25 +180,31 @@ export function AddPhotoStep() {
     startCountdown();
   };
 
+  const handleCaptureClick = () => {
+    if (isCapturing || isCountingDown || showFlash || captureSessionActive) return;
+
+    const emptyIndices = photos.reduce<number[]>((indices, photo, index) => {
+      if (photo === null) {
+        indices.push(index);
+      }
+      return indices;
+    }, []);
+
+    beginCaptureQueue(emptyIndices);
+  };
+
   const handleThumbnailClick = (index: number) => {
     if (photoMode !== "take") return;
     if (!photos[index]) return;
-    if (isCapturing || showFlash) return;
+    if (isCapturing || showFlash || captureSessionActive) return;
 
     if (isCountingDown) {
       cancelCountdown();
     }
 
-    captureSlotIndexRef.current = index;
     setActiveSlotIndex(index);
     setIsRetaking(true);
-
-    if (!sessionStarted) {
-      activateCamera();
-      setSessionStarted(true);
-    }
-
-    startCountdown();
+    beginCaptureQueue([index]);
   };
 
   const handleUploadSlotClick = (index: number) => {
@@ -216,6 +249,9 @@ export function AddPhotoStep() {
   const handleModeChange = (mode: "take" | "upload") => {
     if (mode === "upload") {
       cancelCountdown();
+      captureQueueRef.current = [];
+      setBatchCaptureMeta(null);
+      setCaptureSessionActive(false);
       setSessionStarted(false);
       setIsRetaking(false);
       const nextEmpty = photos.findIndex((photo) => photo === null);
@@ -231,8 +267,10 @@ export function AddPhotoStep() {
     photoMode === "take" && (!sessionStarted || !isReady) && !error;
 
   const takeStatusHint =
-    isCountingDown || isCapturing
-      ? "capturing the moments..."
+    isCountingDown || isCapturing || captureSessionActive
+      ? batchCaptureMeta && batchCaptureMeta.total > 1
+        ? `capturing photo ${batchCaptureMeta.pos} of ${batchCaptureMeta.total}...`
+        : "capturing the moments..."
       : allPhotosFilled
         ? (
             <>
@@ -243,7 +281,9 @@ export function AddPhotoStep() {
           )
         : isRetaking
           ? `retaking photo ${(activeSlotIndex ?? 0) + 1}...`
-          : `photo ${targetIndex + 1} of ${frame.photoCount}`;
+          : batchCaptureMeta
+            ? `photo ${batchCaptureMeta.pos} of ${batchCaptureMeta.total}`
+            : `${frame.photoCount} photos — tap capture to start`;
 
   return (
     <PageShell
@@ -256,7 +296,10 @@ export function AddPhotoStep() {
           </ActionFooter>
         ) : photoMode === "take" ? (
           <ActionFooter hint={takeStatusHint}>
-            <PinkButton onClick={handleCaptureClick} disabled={isCapturing || isCountingDown}>
+            <PinkButton
+              onClick={handleCaptureClick}
+              disabled={isCapturing || isCountingDown || captureSessionActive}
+            >
               <Image src="/figma/icons/camera-black.svg" alt="" width={16} height={16} />
               Capture
             </PinkButton>
@@ -373,7 +416,7 @@ export function AddPhotoStep() {
                         width={size.width}
                         className={photo ? "cursor-pointer" : undefined}
                         onClick={
-                          photo && !isCapturing && !showFlash
+                          photo && !isCapturing && !showFlash && !captureSessionActive
                             ? () => handleThumbnailClick(index)
                             : undefined
                         }
@@ -410,7 +453,6 @@ export function AddPhotoStep() {
                 uploadPreviewSize.height
               }
               captionText={captionText}
-              captionSize={uploadLayout.captionSize}
               showPlaceholders
               placeholderBg={uploadLayout.placeholderBg}
               overlayBg={uploadLayout.overlayBg}

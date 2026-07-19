@@ -50,7 +50,6 @@ export const ADD_PHOTO_LAYOUT = {
     /** Same preview size as landing frame picker (133.33 × 400 vertical). */
     previewWidth: 133.33,
     previewHeight: 400,
-    captionSize: 8,
     placeholderBg: "#2a2a2a",
     overlayBg: "rgba(32, 32, 32, 0.8)",
     tabsToPreviewGap: 24,

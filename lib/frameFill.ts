@@ -24,7 +24,10 @@ export function isPickerSwatch(value: string): boolean {
 export function getPatternPath(value: string): string | null {
   if (!isPatternFill(value)) return null;
   const id = value.slice("pattern:".length);
-  return `/figma/patterns/${id}.svg`;
+  if (id.includes(".")) {
+    return `/figma/patterns/${id}`;
+  }
+  return `/figma/patterns/${id}.png`;
 }
 
 export function getSwatchPreviewStyle(value: string): {
@@ -99,6 +102,11 @@ export async function applyCanvasFill(
     }
 
     const image = await loadImage(path);
+    if (path.endsWith(".png") || path.endsWith(".jpg") || path.endsWith(".webp")) {
+      drawCoverImage(ctx, image, width, height);
+      return;
+    }
+
     const pattern = ctx.createPattern(image, "repeat");
     if (pattern) {
       ctx.fillStyle = pattern;

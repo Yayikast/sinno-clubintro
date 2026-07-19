@@ -36,7 +36,7 @@ export function PageShell({
   footerStyle,
 }: PageShellProps) {
   return (
-    <div className="relative mx-auto flex min-h-dvh w-full max-w-full flex-col overflow-x-hidden">
+    <div className="relative mx-auto flex h-full w-full max-w-full flex-col overflow-hidden">
       <div className="pointer-events-none absolute inset-0 -z-10">
         <Image
           src="/figma/decorations/background.png"
@@ -48,7 +48,7 @@ export function PageShell({
       </div>
 
       <div
-        className="mx-auto box-border flex min-h-dvh w-full min-w-0 max-w-full flex-1 flex-col overflow-x-hidden"
+        className="mx-auto box-border flex h-full w-full min-w-0 max-w-full flex-col overflow-hidden"
         style={{
           maxWidth,
           paddingLeft: paddingX,
@@ -74,7 +74,7 @@ export function PageShell({
         </header>
 
         <main
-          className={`flex min-h-0 w-full min-w-0 flex-1 flex-col items-center overflow-x-hidden ${mainClassName}`}
+          className={`flex min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden ${mainClassName}`}
         >
           {children}
         </main>
@@ -111,7 +111,7 @@ export function PageContent({
 }: PageContentProps) {
   return (
     <div
-      className={`mx-auto box-border flex w-full min-w-0 max-w-full flex-col items-center overflow-x-hidden ${className}`}
+      className={`mx-auto box-border flex w-full min-w-0 max-w-full flex-col items-stretch overflow-hidden ${className}`}
       style={{ maxWidth: PAGE_LAYOUT.contentWidth, ...style }}
     >
       {children}
