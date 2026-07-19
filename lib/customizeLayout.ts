@@ -1,5 +1,4 @@
 import { PAGE_LAYOUT } from "@/lib/pageLayout";
-import { getResponsivePaddingY } from "@/lib/responsiveLayout";
 
 /** Customize page layout tokens from Figma (393×852 frame). */
 export const CUSTOMIZE_LAYOUT = {
@@ -139,18 +138,29 @@ export function estimateCustomizeControlsHeight(
   );
 }
 
-/** Max preview height for side-by-side customize layout. */
-export function getCustomizePreviewMaxHeight(viewportHeight: number): number {
-  const reserved =
-    getResponsivePaddingY(viewportHeight) * 2 +
-    52 +
+/** Vertical space available for the preview + swatch row inside `<main>`. */
+export function getCustomizeAvailableRowHeight(contentHeight: number): number {
+  const reservedInMain =
     CUSTOMIZE_LAYOUT.headerToTitleGap +
     CUSTOMIZE_LAYOUT.titleSize * 1.2 +
     CUSTOMIZE_LAYOUT.titleToContentGap +
-    PAGE_LAYOUT.primaryButton.height +
     CUSTOMIZE_LAYOUT.contentToFooterGap;
 
-  return Math.max(72, viewportHeight - reserved);
+  return Math.max(72, contentHeight - reservedInMain);
+}
+
+/** Max preview height for side-by-side customize layout. */
+export function getCustomizePreviewMaxHeight(
+  contentHeight: number,
+  controlsHeight: number,
+): number {
+  const availableRowHeight = getCustomizeAvailableRowHeight(contentHeight);
+
+  if (controlsHeight <= availableRowHeight) {
+    return availableRowHeight;
+  }
+
+  return Math.max(72, availableRowHeight);
 }
 
 /** Swatch ring — inner stroke always; pink outer + black overlay when selected. */

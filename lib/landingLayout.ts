@@ -17,6 +17,7 @@ export const LANDING_LAYOUT = {
   /** Selected state background behind icon. */
   selectorSelectedSize: 66,
   selectorSelectedBg: "rgba(255, 255, 255, 0.2)",
+  selectorUnselectedOpacity: 0.45,
   selectorSelectedRadius: 4,
   selectorGap: 8,
 } as const;

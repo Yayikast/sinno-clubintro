@@ -15,7 +15,8 @@ export const ADD_PHOTO_LAYOUT = {
     trackBg: "#FFEDF1",
     pillBg: "#FFFFFF",
     pillInset: 2,
-    textColor: "#000000",
+    selectedTextColor: "#000000",
+    unselectedTextColor: "rgba(0, 0, 0, 0.45)",
   },
   countdown: {
     size: 32,
@@ -23,7 +24,7 @@ export const ADD_PHOTO_LAYOUT = {
     selectedBg: "#FFFFFF",
     unselectedBg: "#FFEDF1",
     selectedColor: "#000000",
-    unselectedColor: "#000000",
+    unselectedColor: "rgba(0, 0, 0, 0.45)",
   },
   thumbnail: {
     height: 70,

@@ -250,13 +250,13 @@ export function ModeTabs({ mode, onChange }: ModeTabsProps) {
       <button
         type="button"
         onClick={() => onChange("take")}
-        className="font-cursive relative z-10 m-0 box-border flex items-center justify-center border-0 bg-transparent p-0 text-center font-normal"
+        className="font-cursive relative z-10 m-0 box-border flex items-center justify-center border-0 bg-transparent p-0 text-center font-normal transition-colors"
         style={{
           height: tabs.height - pillInset * 2,
           minHeight: tabs.height - pillInset * 2,
           maxHeight: tabs.height - pillInset * 2,
           fontSize: tabs.fontSize,
-          color: tabs.textColor,
+          color: mode === "take" ? tabs.selectedTextColor : tabs.unselectedTextColor,
         }}
       >
         Take Photos
@@ -264,13 +264,13 @@ export function ModeTabs({ mode, onChange }: ModeTabsProps) {
       <button
         type="button"
         onClick={() => onChange("upload")}
-        className="font-cursive relative z-10 m-0 box-border flex items-center justify-center border-0 bg-transparent p-0 text-center font-normal"
+        className="font-cursive relative z-10 m-0 box-border flex items-center justify-center border-0 bg-transparent p-0 text-center font-normal transition-colors"
         style={{
           height: tabs.height - pillInset * 2,
           minHeight: tabs.height - pillInset * 2,
           maxHeight: tabs.height - pillInset * 2,
           fontSize: tabs.fontSize,
-          color: tabs.textColor,
+          color: mode === "upload" ? tabs.selectedTextColor : tabs.unselectedTextColor,
         }}
       >
         Upload
