@@ -414,6 +414,7 @@ export function AddPhotoStep() {
                 }`}
                 style={{
                   gap: ADD_PHOTO_LAYOUT.thumbnail.gap,
+                  maxHeight: ADD_PHOTO_LAYOUT.thumbnail.maxRowHeight,
                   WebkitOverflowScrolling: "touch",
                 }}
               >

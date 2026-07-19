@@ -25,6 +25,7 @@ export const ADD_PHOTO_LAYOUT = {
   },
   thumbnail: {
     height: 70,
+    maxRowHeight: 80,
     gap: 8,
     widthsByFrame: {
       frame1: [45, 45],
@@ -77,12 +78,13 @@ export interface AddPhotoThumbnailSize {
 
 /**
  * Thumbnails use h:w = 70:figmaWidth per slot at full size.
- * Scales to fit `maxRowWidth`; optionally scales up to fill the row width.
+ * Scales to fit `maxRowWidth` and `maxRowHeight`; optionally scales up to fill row width.
  */
 export function getAddPhotoThumbnailSizes(
   frameId: keyof typeof ADD_PHOTO_LAYOUT.thumbnail.widthsByFrame,
   maxRowWidth: number = ADD_PHOTO_LAYOUT.viewfinder.width,
   fillWidth = false,
+  maxRowHeight: number = ADD_PHOTO_LAYOUT.thumbnail.maxRowHeight,
 ): AddPhotoThumbnailSize[] {
   const { thumbnail } = ADD_PHOTO_LAYOUT;
   const baseWidths = [...thumbnail.widthsByFrame[frameId]];
@@ -92,12 +94,17 @@ export function getAddPhotoThumbnailSizes(
 
   const thumbnailsWidth = baseWidths.reduce((sum, width) => sum + width, 0);
   const gapsWidth = Math.max(0, baseWidths.length - 1) * gap;
-  const totalRowWidth = thumbnailsWidth + gapsWidth;
   const availableWidth = Math.max(0, maxRowWidth - gapsWidth);
+  const scaleWidth = availableWidth / thumbnailsWidth;
+  const scaleHeight = maxRowHeight / baseHeight;
 
   let scale = 1;
-  if (fillWidth || totalRowWidth > maxRowWidth) {
-    scale = availableWidth / thumbnailsWidth;
+  if (fillWidth) {
+    scale = Math.min(scaleWidth, scaleHeight);
+  } else if (thumbnailsWidth * scale + gapsWidth > maxRowWidth) {
+    scale = Math.min(scaleWidth, scaleHeight);
+  } else {
+    scale = Math.min(1, scaleHeight);
   }
 
   let height = baseHeight * scale;
