@@ -8,7 +8,9 @@ export const CUSTOMIZE_LAYOUT = {
   headerToTitleGap: 40,
   titleSize: 24,
   /** Space between "Customize your frame <3" and preview / swatch controls. */
-  titleToContentGap: 32,
+  titleToContentGap: 40,
+  /** Match title→content; space between preview row and Print footer. */
+  contentToFooterGap: 40,
   columnGap: 16,
   /** Left preview column as a share of content width (photostrip). */
   previewColumnShare: 0.42,
@@ -146,7 +148,7 @@ export function getCustomizePreviewMaxHeight(viewportHeight: number): number {
     CUSTOMIZE_LAYOUT.titleSize * 1.2 +
     CUSTOMIZE_LAYOUT.titleToContentGap +
     PAGE_LAYOUT.primaryButton.height +
-    16;
+    CUSTOMIZE_LAYOUT.contentToFooterGap;
 
   return Math.max(72, viewportHeight - reserved);
 }
