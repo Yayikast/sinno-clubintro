@@ -1,6 +1,5 @@
 "use client";
 
-import { useRef } from "react";
 import { getSwatchBoxShadow } from "@/lib/customizeLayout";
 import { COLOR_PICKER_PATH } from "@/lib/frameFill";
 
@@ -30,24 +29,17 @@ export function ColorWheelPicker({
   value = "#000000",
   onColorPick,
 }: ColorWheelPickerProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
   const colorInputValue = toColorInputValue(value);
 
   return (
-    <div className="relative shrink-0" style={{ width: size, height: size }}>
-      <button
-        type="button"
-        aria-label="Color picker"
-        aria-pressed={active}
-        onClick={() => inputRef.current?.click()}
-        className="m-0 shrink-0 rounded-full border-0 p-0"
+    <div
+      className="relative shrink-0 overflow-hidden rounded-full"
+      style={{ width: size, height: size }}
+    >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 rounded-full"
         style={{
-          width: size,
-          height: size,
-          minWidth: size,
-          minHeight: size,
-          maxWidth: size,
-          maxHeight: size,
           boxShadow: getSwatchBoxShadow(active),
           backgroundImage: `url(${COLOR_PICKER_PATH})`,
           backgroundSize: "cover",
@@ -55,21 +47,22 @@ export function ColorWheelPicker({
         }}
       />
       <input
-        ref={inputRef}
         type="color"
         value={colorInputValue}
         onChange={(event) => onColorPick(event.target.value)}
-        className="pointer-events-none absolute left-0 top-0 opacity-0"
+        onInput={(event) => onColorPick(event.currentTarget.value)}
+        aria-label="Color picker"
+        className="color-picker-input absolute inset-0 m-0 cursor-pointer opacity-0"
         style={{
           width: size,
           height: size,
           minWidth: size,
           minHeight: size,
+          maxWidth: size,
+          maxHeight: size,
           padding: 0,
           border: 0,
         }}
-        tabIndex={-1}
-        aria-hidden
       />
     </div>
   );

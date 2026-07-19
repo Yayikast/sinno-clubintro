@@ -18,6 +18,8 @@ interface PageShellProps {
   titleClassName?: string;
   subtitleClassName?: string;
   mainClassName?: string;
+  /** When false, main content does not scroll (e.g. fixed-height step layouts). */
+  mainScroll?: boolean;
   footerClassName?: string;
   footerStyle?: CSSProperties;
 }
@@ -33,6 +35,7 @@ export function PageShell({
   titleClassName = "font-cursive text-[40px] font-normal leading-none text-black",
   subtitleClassName = "font-mono text-[12px] font-normal leading-normal text-black",
   mainClassName = "",
+  mainScroll = true,
   footerClassName = "",
   footerStyle,
 }: PageShellProps) {
@@ -94,7 +97,7 @@ export function PageShell({
         </header>
 
         <main
-          className={`flex min-h-0 w-full min-w-0 flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-y-contain ${mainClassName}`}
+          className={`flex min-h-0 w-full min-w-0 flex-1 flex-col overflow-x-hidden ${mainScroll ? "overflow-y-auto overscroll-y-contain" : "overflow-y-hidden"} ${mainClassName}`}
         >
           {children}
         </main>
