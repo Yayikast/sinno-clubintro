@@ -104,6 +104,7 @@ export function CustomizeStep() {
       showBack
       onBack={goBack}
       mainClassName="min-h-0"
+      mainScroll={false}
       footerStyle={{ marginTop: CUSTOMIZE_LAYOUT.contentToFooterGap }}
       footer={
         <ActionFooter>
