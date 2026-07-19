@@ -25,6 +25,8 @@ export interface FrameConfig {
   slots: PhotoSlot[];
   /** Normalized vertical anchor for caption (0–1). */
   captionY: number;
+  /** Optional px nudge applied to caption Y (defaults to `STRIP_CAPTION_Y_OFFSET_PX`). */
+  captionYOffset?: number;
   /** Optional multiplier on default caption font size (wide layouts). */
   captionFontSizeScale?: number;
 }

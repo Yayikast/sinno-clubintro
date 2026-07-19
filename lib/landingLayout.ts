@@ -6,9 +6,6 @@ export const LANDING_LAYOUT = {
   frameHeight: 852,
   paddingX: PAGE_LAYOUT.paddingX,
   paddingY: PAGE_LAYOUT.paddingY,
-  titleSize: 40,
-  subtitleSize: 12,
-  buttonTextSize: 14,
   headerToPreviewGap: 24,
   previewToSelectorGap: 20,
   selectorToButtonGap: 32,
@@ -22,9 +19,6 @@ export const LANDING_LAYOUT = {
   selectorSelectedBg: "rgba(255, 255, 255, 0.2)",
   selectorSelectedRadius: 4,
   selectorGap: 8,
-  buttonWidth: PAGE_LAYOUT.primaryButton.width,
-  buttonHeight: PAGE_LAYOUT.primaryButton.height,
-  buttonRadius: PAGE_LAYOUT.primaryButton.radius,
 } as const;
 
 /** Scale frame selector row to fit the content column without clipping. */

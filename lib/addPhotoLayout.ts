@@ -8,23 +8,22 @@ export const ADD_PHOTO_LAYOUT = {
   modeTabs: {
     width: PAGE_LAYOUT.contentWidth,
     height: 35,
-    buttonWidth: 160.5,
     gap: 8,
     fontSize: 14,
-    padding: 8,
     radius: 6,
     /** Sliding pill track + indicator (Option C). */
     trackBg: "#FFEDF1",
     pillBg: "#FFFFFF",
     pillInset: 2,
     textColor: "#000000",
-    borderColor: "#FFDEE6",
   },
   countdown: {
     size: 32,
     gap: 12,
+    selectedBg: "#FFFFFF",
+    unselectedBg: "#FFEDF1",
     selectedColor: "#000000",
-    unselectedColor: "#CACACA",
+    unselectedColor: "#000000",
   },
   thumbnail: {
     height: 70,
@@ -47,14 +46,12 @@ export const ADD_PHOTO_LAYOUT = {
     tabsToCountdownGap: 24,
     countdownToCaptureGap: 16,
     viewfinderToThumbnailsGap: 12,
-    thumbnailsToDescriptionGap: 16,
-    descriptionToFooterGap: 24,
   },
   upload: {
     /** Same preview size as landing frame picker (133.33 × 400 vertical). */
     previewWidth: 133.33,
     previewHeight: 400,
-    placeholderBg: "#2a2a2a",
+    placeholderBg: "#202020",
     overlayBg: "rgba(32, 32, 32, 0.8)",
     tabsToPreviewGap: 24,
     previewToHintGap: 32,

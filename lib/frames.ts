@@ -12,6 +12,7 @@ export const FRAMES: FrameConfig[] = [
     svgPath: "/figma/frames/Frame1.svg",
     iconPath: "/figma/frames/Frame1.svg",
     captionY: 0.945,
+    captionYOffset: 0,
     slots: [
       { x: 0.085, y: 0.0283, width: 0.83, height: 0.4308 },
       { x: 0.085, y: 0.4875, width: 0.83, height: 0.4308 },
@@ -27,6 +28,7 @@ export const FRAMES: FrameConfig[] = [
     svgPath: "/figma/frames/Frame2.svg",
     iconPath: "/figma/frames/Frame2.svg",
     captionY: 0.945,
+    captionYOffset: 0,
     slots: [
       { x: 0.085, y: 0.0283, width: 0.83, height: 0.2767 },
       { x: 0.085, y: 0.3333, width: 0.83, height: 0.2767 },
@@ -43,6 +45,7 @@ export const FRAMES: FrameConfig[] = [
     svgPath: "/figma/frames/Frame3.svg",
     iconPath: "/figma/frames/Frame3.svg",
     captionY: 0.945,
+    captionYOffset: 0,
     slots: [
       { x: 0.085, y: 0.0283, width: 0.83, height: 0.2008 },
       { x: 0.085, y: 0.2575, width: 0.83, height: 0.2008 },

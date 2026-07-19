@@ -1,4 +1,5 @@
 import { PAGE_LAYOUT } from "@/lib/pageLayout";
+import { getResponsivePaddingY } from "@/lib/responsiveLayout";
 
 /** Customize page layout tokens from Figma (393×852 frame). */
 export const CUSTOMIZE_LAYOUT = {
@@ -15,7 +16,6 @@ export const CUSTOMIZE_LAYOUT = {
   labelToSwatchesGap: 8,
   swatchMinSize: 30,
   swatchGap: 8,
-  selectedRing: "#FFA8BD",
   swatchStroke: {
     innerColor: "rgba(0, 0, 0, 0.2)",
     innerWidth: 0.5,
@@ -136,13 +136,14 @@ export function estimateCustomizeControlsHeight(
   );
 }
 
-/** Max preview height for side-by-side layout (strip left, controls right). */
+/** Max preview height for side-by-side or stacked customize layout. */
 export function getCustomizePreviewMaxHeight(
   viewportHeight: number,
   frameSwatchCount: number,
   textSwatchCount: number,
   contentWidth: number,
   swatchSize?: number,
+  stacked = false,
 ): number {
   const { controlsWidth } = getCustomizeColumnWidths(contentWidth);
   const size = swatchSize ?? getCustomizeSwatchSize(controlsWidth);
@@ -154,7 +155,7 @@ export function getCustomizePreviewMaxHeight(
   );
 
   const reserved =
-    PAGE_LAYOUT.paddingY * 2 +
+    getResponsivePaddingY(viewportHeight) * 2 +
     52 +
     CUSTOMIZE_LAYOUT.headerToTitleGap +
     CUSTOMIZE_LAYOUT.titleSize * 1.2 +
@@ -163,6 +164,14 @@ export function getCustomizePreviewMaxHeight(
     16;
 
   const rowMaxHeight = Math.max(72, viewportHeight - reserved);
+
+  if (stacked) {
+    return Math.max(
+      72,
+      rowMaxHeight - controlsHeight - CUSTOMIZE_LAYOUT.columnGap,
+    );
+  }
+
   return Math.min(rowMaxHeight, controlsHeight);
 }
 

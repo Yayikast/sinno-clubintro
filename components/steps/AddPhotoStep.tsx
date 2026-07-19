@@ -382,17 +382,16 @@ export function AddPhotoStep() {
                 {error ? (
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/80 p-4 text-center">
                     <p className="font-mono text-sm text-white">{error.message}</p>
-                    <button
-                      type="button"
+                    <PinkButton
                       onClick={() => {
                         resetError();
                         activateCamera();
                         setSessionStarted(true);
                       }}
-                      className="font-mono rounded-full bg-white px-4 py-2 text-sm text-black"
+                      width={120}
                     >
                       Try again
-                    </button>
+                    </PinkButton>
                   </div>
                 ) : null}
 
@@ -457,7 +456,10 @@ export function AddPhotoStep() {
             </div>
           </>
         ) : (
-          <div className="flex min-h-0 w-full flex-1 flex-col items-center justify-center">
+          <div
+            className="flex min-h-0 w-full flex-1 flex-col items-center justify-center"
+            style={{ marginTop: uploadLayout.tabsToPreviewGap }}
+          >
             <FramePreview
               frame={frame}
               photos={photos}

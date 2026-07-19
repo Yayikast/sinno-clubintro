@@ -8,7 +8,9 @@ import { getFrameSelectorLayout } from "@/lib/landingLayout";
 import {
   clampStripCaption,
   getFittedStripCaptionFontSize,
+  getStripCaptionPositionY,
   STRIP_CAPTION_MAX_WIDTH_RATIO,
+  STRIP_CAPTION_Y_OFFSET_PX,
 } from "@/lib/stripCaption";
 import type { FrameConfig } from "@/types/photobooth";
 
@@ -46,7 +48,7 @@ export function FramePreview({
   activeSlotIndex = null,
   hoverSlotIndex = null,
   showPlaceholders = false,
-  placeholderBg = "#2a2a2a",
+  placeholderBg = "#202020",
   overlayBg = "rgba(32, 32, 32, 0.8)",
 }: FramePreviewProps) {
   const slots = photos ?? Array.from({ length: frame.photoCount }, () => null);
@@ -66,6 +68,7 @@ export function FramePreview({
   } as const;
 
   const effectiveWidth = width ?? presetWidths[size];
+  const previewHeight = height ?? effectiveWidth / frame.aspectRatio;
   const displayCaption = clampStripCaption(captionText).trim();
   const captionFontSize = useMemo(
     () =>
@@ -75,6 +78,10 @@ export function FramePreview({
         frame.captionFontSizeScale ?? 1,
       ),
     [displayCaption, effectiveWidth, frame.captionFontSizeScale],
+  );
+  const galleryIconSize = useMemo(
+    () => Math.min(20, Math.max(12, Math.round(effectiveWidth * 0.12))),
+    [effectiveWidth],
   );
 
   const widthStyle = width
@@ -142,8 +149,8 @@ export function FramePreview({
                 <Image
                   src="/figma/icons/gallery.svg"
                   alt=""
-                  width={20}
-                  height={20}
+                  width={galleryIconSize}
+                  height={galleryIconSize}
                   className="opacity-60"
                 />
               </div>
@@ -159,8 +166,8 @@ export function FramePreview({
                 <Image
                   src="/figma/icons/gallery.svg"
                   alt=""
-                  width={20}
-                  height={20}
+                  width={galleryIconSize}
+                  height={galleryIconSize}
                 />
               </div>
             ) : null}
@@ -179,7 +186,11 @@ export function FramePreview({
         <p
           className="font-cursive pointer-events-none absolute left-1/2 z-10 -translate-x-1/2 overflow-hidden text-ellipsis whitespace-nowrap text-center font-normal leading-none"
           style={{
-            top: `${frame.captionY * 100}%`,
+            top: getStripCaptionPositionY(
+              frame.captionY,
+              previewHeight,
+              frame.captionYOffset ?? STRIP_CAPTION_Y_OFFSET_PX,
+            ),
             color: textColor,
             fontSize: captionFontSize,
             maxWidth: `${effectiveWidth * STRIP_CAPTION_MAX_WIDTH_RATIO}px`,
