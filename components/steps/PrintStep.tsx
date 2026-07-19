@@ -12,20 +12,34 @@ import {
   getPrinterTopInset,
   PRINT_LAYOUT,
 } from "@/lib/printLayout";
+import { scaleBoxToFit } from "@/lib/responsiveLayout";
 import { useAvailableContentWidth } from "@/hooks/useAvailableContentWidth";
+import { useViewportLayout } from "@/hooks/useViewportLayout";
 import { PageContent, PageShell, PinkButton } from "@/components/ui/PageShell";
 
 export function PrintStep() {
   const { finalStripUrl, frame, reset, goBack } = usePhotobooth();
   const [isPrinting, setIsPrinting] = useState(true);
   const availableContentWidth = useAvailableContentWidth();
-  const contentWidth = Math.min(PRINT_LAYOUT.contentWidth, availableContentWidth);
-  const previewWidth = getPrintStripWidth(contentWidth);
+  const { contentWidth, contentHeight } = useViewportLayout({ hasFooter: false });
+  const previewWidth = getPrintStripWidth(
+    Math.min(PRINT_LAYOUT.contentWidth, contentWidth, availableContentWidth),
+  );
   const stripHeight = useMemo(
     () => getPrintStripHeight(previewWidth, frame.aspectRatio),
     [frame.aspectRatio, previewWidth],
   );
-  const stripStartOffset = getPrintStripStartOffset(stripHeight);
+  const stripDimensions = useMemo(
+    () =>
+      scaleBoxToFit(
+        previewWidth,
+        stripHeight,
+        previewWidth,
+        Math.max(140, contentHeight * 0.52),
+      ),
+    [contentHeight, previewWidth, stripHeight],
+  );
+  const stripStartOffset = getPrintStripStartOffset(stripDimensions.height);
 
   useEffect(() => {
     if (!finalStripUrl) return;
@@ -43,9 +57,9 @@ export function PrintStep() {
   };
 
   return (
-    <PageShell showBack onBack={goBack} mainClassName="min-h-0 overflow-visible">
+    <PageShell showBack onBack={goBack} mainClassName="min-h-0">
       <PageContent
-        className="flex h-full min-h-0 w-full flex-1 flex-col !overflow-visible"
+        className="flex min-h-0 w-full flex-1 flex-col"
         style={{ marginTop: PRINT_LAYOUT.headerToTitleGap }}
       >
         <h2
@@ -56,15 +70,17 @@ export function PrintStep() {
         </h2>
 
         <div
-          className="mx-auto flex min-h-0 w-full flex-1 flex-col items-center overflow-visible"
+          className="mx-auto flex min-h-0 w-full flex-1 flex-col items-center"
           style={{ marginTop: PRINT_LAYOUT.titleToContentGap }}
         >
           <div
-            className="relative shrink-0 overflow-visible"
+            className="relative shrink-0"
             style={{
               width: PRINT_LAYOUT.printerWidth,
               minHeight:
-                getPrinterTopInset() + PRINT_LAYOUT.stripSlotTop + stripHeight,
+                getPrinterTopInset() +
+                PRINT_LAYOUT.stripSlotTop +
+                stripDimensions.height,
               paddingTop: getPrinterTopInset(),
             }}
           >
@@ -91,13 +107,13 @@ export function PrintStep() {
                   className="absolute left-1/2 -translate-x-1/2 overflow-hidden"
                   style={{
                     top: PRINT_LAYOUT.stripSlotTop,
-                    width: previewWidth,
-                    height: stripHeight,
+                    width: stripDimensions.width,
+                    height: stripDimensions.height,
                     zIndex: PRINT_LAYOUT.zIndex.strip,
                   }}
                 >
                   <motion.div
-                    style={{ width: previewWidth }}
+                    style={{ width: stripDimensions.width }}
                     initial={{ y: stripStartOffset }}
                     animate={{ y: 0 }}
                     transition={{
@@ -111,7 +127,7 @@ export function PrintStep() {
                       src={finalStripUrl}
                       alt="Your photostrip"
                       className="block max-w-full rounded-sm object-contain shadow-md"
-                      style={{ width: previewWidth }}
+                      style={{ width: stripDimensions.width }}
                     />
                   </motion.div>
                 </div>

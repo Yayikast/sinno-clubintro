@@ -2,8 +2,9 @@
 
 import { ADD_PHOTO_LAYOUT } from "@/lib/addPhotoLayout";
 import { PAGE_LAYOUT } from "@/lib/pageLayout";
+import { getResponsivePaddingY } from "@/lib/responsiveLayout";
 import Image from "next/image";
-import type { CSSProperties, ReactNode } from "react";
+import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 
 interface PageShellProps {
   children: ReactNode;
@@ -35,6 +36,25 @@ export function PageShell({
   footerClassName = "",
   footerStyle,
 }: PageShellProps) {
+  const [paddingTop, setPaddingTop] = useState(paddingY);
+
+  useEffect(() => {
+    const update = () => {
+      const viewportHeight =
+        window.visualViewport?.height ?? document.documentElement.clientHeight;
+      setPaddingTop(getResponsivePaddingY(viewportHeight, paddingY));
+    };
+
+    update();
+    window.addEventListener("resize", update);
+    window.visualViewport?.addEventListener("resize", update);
+
+    return () => {
+      window.removeEventListener("resize", update);
+      window.visualViewport?.removeEventListener("resize", update);
+    };
+  }, [paddingY]);
+
   return (
     <div className="relative mx-auto flex h-full w-full max-w-full flex-col overflow-hidden">
       <div className="pointer-events-none absolute inset-0 -z-10">
@@ -53,8 +73,8 @@ export function PageShell({
           maxWidth,
           paddingLeft: paddingX,
           paddingRight: paddingX,
-          paddingTop: `max(${paddingY}px, calc(${paddingY}px + env(safe-area-inset-top, 0px)))`,
-          paddingBottom: `max(${paddingY}px, calc(${paddingY}px + env(safe-area-inset-bottom, 0px)))`,
+          paddingTop: `max(${paddingTop}px, calc(${paddingTop}px + env(safe-area-inset-top, 0px)))`,
+          paddingBottom: `max(${paddingTop}px, calc(${paddingTop}px + env(safe-area-inset-bottom, 0px)))`,
         }}
       >
         <header className="relative shrink-0 text-center">
@@ -74,7 +94,7 @@ export function PageShell({
         </header>
 
         <main
-          className={`flex min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden ${mainClassName}`}
+          className={`flex min-h-0 w-full min-w-0 flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-y-contain ${mainClassName}`}
         >
           {children}
         </main>
