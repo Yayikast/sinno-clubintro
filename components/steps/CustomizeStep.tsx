@@ -104,6 +104,7 @@ export function CustomizeStep() {
       showBack
       onBack={goBack}
       mainClassName="min-h-0"
+      footerStyle={{ marginTop: CUSTOMIZE_LAYOUT.contentToFooterGap }}
       footer={
         <ActionFooter>
           <PinkButton onClick={handlePrint}>
@@ -114,8 +115,11 @@ export function CustomizeStep() {
       }
     >
       <PageContent
-        className="flex min-h-0 w-full flex-1 flex-col"
-        style={{ marginTop: CUSTOMIZE_LAYOUT.headerToTitleGap }}
+        className="flex w-full shrink-0 flex-col"
+        style={{
+          marginTop: CUSTOMIZE_LAYOUT.headerToTitleGap,
+          gap: CUSTOMIZE_LAYOUT.titleToContentGap,
+        }}
       >
         <h2
           className="shrink-0 font-cursive text-center font-normal text-black"
@@ -125,16 +129,18 @@ export function CustomizeStep() {
         </h2>
 
         <div
-          className="customize-layout-row mx-auto flex w-fit max-w-full shrink-0 items-start"
+          className="customize-layout-row mx-auto flex w-fit max-w-full shrink-0 items-stretch"
           style={{
-            marginTop: CUSTOMIZE_LAYOUT.titleToContentGap,
             gap: CUSTOMIZE_LAYOUT.columnGap,
             maxWidth: contentWidth,
           }}
         >
           <div
-            className="flex shrink-0 items-start justify-center overflow-hidden"
-            style={{ width: previewDimensions.width }}
+            className="flex shrink-0 items-center justify-center overflow-hidden"
+            style={{
+              width: previewDimensions.width,
+              minHeight: previewDimensions.height,
+            }}
           >
             {previewUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -159,10 +165,11 @@ export function CustomizeStep() {
           </div>
 
           <div
-            className="flex shrink-0 flex-col"
+            className="flex shrink-0 flex-col justify-center"
             style={{
               gap: CUSTOMIZE_LAYOUT.sectionGap,
               width: controlsContentWidth,
+              minHeight: previewDimensions.height,
             }}
           >
             <ColorSwatchGrid

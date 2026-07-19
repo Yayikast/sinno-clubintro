@@ -69,7 +69,7 @@ button {
 
 .customize-layout-row {
   flex-direction: row;
-  align-items: flex-start;
+  align-items: stretch;
 }
 
 @media (max-height: 680px) {
