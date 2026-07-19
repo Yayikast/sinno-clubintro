@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePhotobooth } from "@/context/PhotoboothProvider";
-import { downloadStrip } from "@/lib/generateStrip";
+import { saveStrip } from "@/lib/generateStrip";
 import {
   getPrintStripHeight,
   getPrintStripStartOffset,
@@ -53,7 +53,7 @@ export function PrintStep() {
 
   const handleDownload = () => {
     if (!finalStripUrl) return;
-    downloadStrip(finalStripUrl);
+    void saveStrip(finalStripUrl);
   };
 
   return (

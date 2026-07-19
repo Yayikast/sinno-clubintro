@@ -179,3 +179,50 @@ export function downloadStrip(dataUrl: string, filename?: string): void {
   link.click();
   document.body.removeChild(link);
 }
+
+function isMobileGalleryTarget(): boolean {
+  if (typeof navigator === "undefined") return false;
+  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
+
+async function dataUrlToPngFile(
+  dataUrl: string,
+  filename: string,
+): Promise<File> {
+  const response = await fetch(dataUrl);
+  const blob = await response.blob();
+  return new File([blob], filename, { type: "image/png" });
+}
+
+function canSharePngFile(file: File): boolean {
+  if (typeof navigator.share !== "function") return false;
+  return !navigator.canShare || navigator.canShare({ files: [file] });
+}
+
+/** Save strip to Photos/Gallery on mobile via the system share sheet. */
+export async function saveStrip(
+  dataUrl: string,
+  filename?: string,
+): Promise<void> {
+  const name = filename ?? `photobooth-${Date.now()}.png`;
+
+  if (isMobileGalleryTarget()) {
+    const file = await dataUrlToPngFile(dataUrl, name);
+
+    if (canSharePngFile(file)) {
+      try {
+        await navigator.share({
+          files: [file],
+          title: "Photobooth strip",
+        });
+        return;
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") {
+          return;
+        }
+      }
+    }
+  }
+
+  downloadStrip(dataUrl, name);
+}
