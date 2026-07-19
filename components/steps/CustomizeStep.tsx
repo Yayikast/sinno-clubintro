@@ -8,6 +8,8 @@ import {
   CUSTOMIZE_LAYOUT,
   getCustomizeColumnWidths,
   getCustomizeControlsContentWidth,
+  estimateCustomizeControlsHeight,
+  getCustomizeAvailableRowHeight,
   getCustomizePreviewMaxHeight,
 } from "@/lib/customizeLayout";
 import { STRIP_CAPTION_MAX_LENGTH, STRIP_CUSTOMIZE_PRINT_CAPTION_EXTRA_OFFSET_PX } from "@/lib/stripCaption";
@@ -41,21 +43,30 @@ export function CustomizeStep() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const debounceRef = useRef<number | null>(null);
   const availableContentWidth = useAvailableContentWidth();
-  const { viewportHeight } = useViewportLayout({ hasFooter: true });
+  const { contentHeight } = useViewportLayout({ hasFooter: true });
   const contentWidth = Math.min(CUSTOMIZE_LAYOUT.contentWidth, availableContentWidth);
-  const { previewWidth } = getCustomizeColumnWidths(contentWidth);
+  const { previewWidth, controlsWidth } = getCustomizeColumnWidths(contentWidth);
   const { width: controlsContentWidth, swatchSize } = getCustomizeControlsContentWidth(
     FRAME_COLOR_SWATCHES.length,
     TEXT_COLOR_SWATCHES.length,
     contentWidth,
   );
-  const previewMaxHeight = getCustomizePreviewMaxHeight(viewportHeight);
+  const controlsHeight = estimateCustomizeControlsHeight(
+    FRAME_COLOR_SWATCHES.length,
+    TEXT_COLOR_SWATCHES.length,
+    controlsWidth,
+    swatchSize,
+  );
+  const previewMaxHeight = getCustomizePreviewMaxHeight(contentHeight, controlsHeight);
+  const availableRowHeight = getCustomizeAvailableRowHeight(contentHeight);
   const previewDimensions = scaleBoxToFit(
     previewWidth,
     previewWidth / frame.aspectRatio,
     previewWidth,
     previewMaxHeight,
   );
+  const rowHeight = Math.max(previewDimensions.height, controlsHeight);
+  const mainScroll = rowHeight > availableRowHeight + 0.5;
 
   useEffect(() => {
     const filledPhotos = photos.filter((photo): photo is string => photo !== null);
@@ -104,7 +115,7 @@ export function CustomizeStep() {
       showBack
       onBack={goBack}
       mainClassName="min-h-0"
-      mainScroll={false}
+      mainScroll={mainScroll}
       footerStyle={{ marginTop: CUSTOMIZE_LAYOUT.contentToFooterGap }}
       footer={
         <ActionFooter>
@@ -116,7 +127,7 @@ export function CustomizeStep() {
       }
     >
       <PageContent
-        className="flex w-full shrink-0 flex-col"
+        className="flex w-full shrink-0 flex-col overflow-visible"
         style={{
           marginTop: CUSTOMIZE_LAYOUT.headerToTitleGap,
           gap: CUSTOMIZE_LAYOUT.titleToContentGap,
@@ -137,10 +148,10 @@ export function CustomizeStep() {
           }}
         >
           <div
-            className="flex shrink-0 items-center justify-center overflow-hidden"
+            className="flex shrink-0 items-center justify-center"
             style={{
               width: previewDimensions.width,
-              minHeight: previewDimensions.height,
+              height: rowHeight,
             }}
           >
             {previewUrl ? (
@@ -148,7 +159,7 @@ export function CustomizeStep() {
               <img
                 src={previewUrl}
                 alt="Strip preview"
-                className="max-w-full rounded-sm object-contain shadow-md"
+                className="block max-h-full max-w-full rounded-sm object-contain shadow-md"
                 style={{
                   width: previewDimensions.width,
                   height: previewDimensions.height,
@@ -156,7 +167,7 @@ export function CustomizeStep() {
               />
             ) : (
               <div
-                className="w-full rounded-sm bg-black/5"
+                className="rounded-sm bg-black/5"
                 style={{
                   width: previewDimensions.width,
                   height: previewDimensions.height,
@@ -170,7 +181,7 @@ export function CustomizeStep() {
             style={{
               gap: CUSTOMIZE_LAYOUT.sectionGap,
               width: controlsContentWidth,
-              minHeight: previewDimensions.height,
+              height: rowHeight,
             }}
           >
             <ColorSwatchGrid

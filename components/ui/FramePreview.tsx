@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Image from "next/image";
 import { CoverImage } from "@/components/ui/SlotPhoto";
 import { useAvailableContentWidth } from "@/hooks/useAvailableContentWidth";
-import { getFrameSelectorLayout } from "@/lib/landingLayout";
+import { getFrameSelectorLayout, LANDING_LAYOUT } from "@/lib/landingLayout";
 import {
   clampStripCaption,
   getFittedStripCaptionFontSize,
@@ -210,6 +210,7 @@ interface FrameSelectorProps {
   itemHeight?: number;
   selectedSize?: number;
   selectedBg?: string;
+  unselectedOpacity?: number;
   selectedRadius?: number;
   gap?: number;
 }
@@ -220,7 +221,8 @@ export function FrameSelector({
   frames,
   itemHeight = 50,
   selectedSize = 66,
-  selectedBg = "rgba(255, 255, 255, 0.2)",
+  selectedBg = LANDING_LAYOUT.selectorSelectedBg,
+  unselectedOpacity = LANDING_LAYOUT.selectorUnselectedOpacity,
   selectedRadius = 4,
   gap = 8,
 }: FrameSelectorProps) {
@@ -270,7 +272,7 @@ export function FrameSelector({
               alt=""
               className="relative z-[1] w-auto object-contain"
               style={{
-                opacity: isSelected ? 1 : 0.55,
+                opacity: isSelected ? 1 : unselectedOpacity,
                 height: iconHeight,
               }}
             />
