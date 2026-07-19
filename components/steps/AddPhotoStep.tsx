@@ -197,6 +197,10 @@ export function AddPhotoStep() {
   const handleCaptureClick = () => {
     if (isCapturing || isCountingDown || showFlash || captureSessionActive) return;
 
+    if (error?.type === "capture-failed") {
+      resetError();
+    }
+
     const emptyIndices = photos.reduce<number[]>((indices, photo, index) => {
       if (photo === null) {
         indices.push(index);
@@ -211,6 +215,10 @@ export function AddPhotoStep() {
     if (photoMode !== "take") return;
     if (!photos[index]) return;
     if (isCapturing || showFlash || captureSessionActive) return;
+
+    if (error?.type === "capture-failed") {
+      resetError();
+    }
 
     if (isCountingDown) {
       cancelCountdown();
@@ -276,7 +284,8 @@ export function AddPhotoStep() {
     setPhotoMode(mode);
   };
 
-  const showCamera = photoMode === "take" && sessionStarted && !error;
+  const isCaptureError = error?.type === "capture-failed";
+  const showCamera = photoMode === "take" && sessionStarted && (!error || isCaptureError);
   const showCameraPlaceholder =
     photoMode === "take" && (!sessionStarted || !isReady) && !error;
 
@@ -379,7 +388,7 @@ export function AddPhotoStep() {
                   </div>
                 ) : null}
 
-                {error ? (
+                {error && !isCaptureError ? (
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/80 p-4 text-center">
                     <p className="font-mono text-sm text-white">{error.message}</p>
                     <PinkButton
@@ -392,6 +401,12 @@ export function AddPhotoStep() {
                     >
                       Try again
                     </PinkButton>
+                  </div>
+                ) : null}
+
+                {isCaptureError ? (
+                  <div className="absolute inset-x-0 bottom-0 bg-black/70 px-4 py-3 text-center">
+                    <p className="font-mono text-xs text-white">{error.message}</p>
                   </div>
                 ) : null}
 

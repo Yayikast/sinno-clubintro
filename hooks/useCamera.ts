@@ -93,7 +93,7 @@ export function useCamera({ webcamRef, initialActive = false }: UseCameraOptions
     if (!webcam) {
       setError({
         type: "capture-failed",
-        message: "Failed to capture photo. Please try again.",
+        message: "Click Capture to try again.",
       });
       return null;
     }
@@ -103,7 +103,7 @@ export function useCamera({ webcamRef, initialActive = false }: UseCameraOptions
     if (!screenshot) {
       setError({
         type: "capture-failed",
-        message: "Failed to capture photo. Please try again.",
+        message: "Click Capture to try again.",
       });
       return null;
     }
