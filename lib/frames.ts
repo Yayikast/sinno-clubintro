@@ -59,7 +59,8 @@ export const FRAMES: FrameConfig[] = [
     aspectRatio: 762 / 1200,
     svgPath: "/figma/frames/Frame4.svg",
     iconPath: "/figma/frames/Frame4.svg",
-    captionY: 0.945,
+    captionY: 0.934,
+    captionFontSizeScale: 0.62,
     slots: [
       { x: 0.0446, y: 0.0283, width: 0.9107, height: 0.4308 },
       { x: 0.0446, y: 0.4875, width: 0.433, height: 0.4308 },
@@ -75,7 +76,8 @@ export const FRAMES: FrameConfig[] = [
     aspectRatio: 762 / 1200,
     svgPath: "/figma/frames/Frame5.svg",
     iconPath: "/figma/frames/Frame5.svg",
-    captionY: 0.945,
+    captionY: 0.934,
+    captionFontSizeScale: 0.62,
     slots: [
       { x: 0.0446, y: 0.0283, width: 0.4331, height: 0.4292 },
       { x: 0.5223, y: 0.0283, width: 0.4331, height: 0.4292 },
@@ -102,12 +104,12 @@ export const FRAME_COLOR_SWATCHES: ColorSwatch[] = [
   { id: "dark-brown", label: "Dark Brown", value: "#5C4033" },
   { id: "pink", label: "Pink", value: "#FFA8BD" },
   { id: "light-pink", label: "Light Pink", value: "#FFDEE6" },
-  { id: "floral", label: "Floral", value: "pattern:floral" },
-  { id: "hearts", label: "Hearts", value: "pattern:hearts" },
-  { id: "purple-sky", label: "Purple Sky", value: "pattern:purple-sky" },
-  { id: "clouds", label: "Clouds", value: "pattern:clouds" },
-  { id: "water", label: "Water", value: "pattern:water" },
-  { id: "plaid", label: "Plaid", value: "pattern:plaid" },
+  { id: "pattern1", label: "Pattern 1", value: "pattern:pattern1.png" },
+  { id: "pattern2", label: "Pattern 2", value: "pattern:pattern2.png" },
+  { id: "pattern3", label: "Pattern 3", value: "pattern:pattern3.png" },
+  { id: "pattern4", label: "Pattern 4", value: "pattern:pattern4.png" },
+  { id: "pattern5", label: "Pattern 5", value: "pattern:pattern5.png" },
+  { id: "pattern6", label: "Pattern 6", value: "pattern:pattern6.png" },
 ];
 
 export const TEXT_COLOR_SWATCHES: ColorSwatch[] = [

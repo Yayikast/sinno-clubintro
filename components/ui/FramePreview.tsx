@@ -1,10 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Image from "next/image";
 import { CoverImage } from "@/components/ui/SlotPhoto";
 import { useAvailableContentWidth } from "@/hooks/useAvailableContentWidth";
 import { getFrameSelectorLayout } from "@/lib/landingLayout";
+import {
+  clampStripCaption,
+  getFittedStripCaptionFontSize,
+  STRIP_CAPTION_MAX_WIDTH_RATIO,
+} from "@/lib/stripCaption";
 import type { FrameConfig } from "@/types/photobooth";
 
 interface FramePreviewProps {
@@ -19,7 +24,6 @@ interface FramePreviewProps {
   /** Explicit height in px (overrides aspect-ratio sizing). */
   height?: number;
   size?: "sm" | "md" | "lg";
-  captionSize?: number;
   onSlotClick?: (index: number) => void;
   /** Slot currently targeted for upload / replace. */
   activeSlotIndex?: number | null;
@@ -38,7 +42,6 @@ export function FramePreview({
   width,
   height,
   size = "md",
-  captionSize = 8,
   onSlotClick,
   activeSlotIndex = null,
   hoverSlotIndex = null,
@@ -55,6 +58,24 @@ export function FramePreview({
     md: "max-w-[220px]",
     lg: "max-w-[280px]",
   };
+
+  const presetWidths = {
+    sm: 140,
+    md: 220,
+    lg: 280,
+  } as const;
+
+  const effectiveWidth = width ?? presetWidths[size];
+  const displayCaption = clampStripCaption(captionText).trim();
+  const captionFontSize = useMemo(
+    () =>
+      getFittedStripCaptionFontSize(
+        effectiveWidth,
+        displayCaption,
+        frame.captionFontSizeScale ?? 1,
+      ),
+    [displayCaption, effectiveWidth, frame.captionFontSizeScale],
+  );
 
   const widthStyle = width
     ? { width, maxWidth: `min(${width}px, 100%)` }
@@ -154,16 +175,17 @@ export function FramePreview({
         className="pointer-events-none object-contain"
       />
 
-      {captionText ? (
+      {displayCaption ? (
         <p
-          className="font-cursive pointer-events-none absolute left-1/2 z-10 -translate-x-1/2 text-center font-normal leading-none"
+          className="font-cursive pointer-events-none absolute left-1/2 z-10 -translate-x-1/2 overflow-hidden text-ellipsis whitespace-nowrap text-center font-normal leading-none"
           style={{
             top: `${frame.captionY * 100}%`,
             color: textColor,
-            fontSize: captionSize,
+            fontSize: captionFontSize,
+            maxWidth: `${effectiveWidth * STRIP_CAPTION_MAX_WIDTH_RATIO}px`,
           }}
         >
-          {captionText}
+          {displayCaption}
         </p>
       ) : null}
     </div>

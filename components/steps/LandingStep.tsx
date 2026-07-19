@@ -35,7 +35,6 @@ export function LandingStep() {
                 previewSize.width) *
               previewSize.height
             }
-            captionSize={LANDING_LAYOUT.captionSize}
             showPlaceholders={false}
           />
         </div>

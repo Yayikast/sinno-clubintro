@@ -15,6 +15,7 @@ import {
   DEFAULT_TEXT_COLOR,
   getFrameById,
 } from "@/lib/frames";
+import { clampStripCaption } from "@/lib/stripCaption";
 import {
   createEmptyPhotos,
   type CountdownSeconds,
@@ -135,7 +136,7 @@ export function PhotoboothProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const setCaptionText = useCallback((text: string) => {
-    setCaptionTextState(text);
+    setCaptionTextState(clampStripCaption(text));
   }, []);
 
   const setFinalStripUrl = useCallback((url: string | null) => {

@@ -23,7 +23,10 @@ export interface FrameConfig {
   svgPath: string;
   iconPath: string;
   slots: PhotoSlot[];
+  /** Normalized vertical anchor for caption (0–1). */
   captionY: number;
+  /** Optional multiplier on default caption font size (wide layouts). */
+  captionFontSizeScale?: number;
 }
 
 export interface ColorSwatch {

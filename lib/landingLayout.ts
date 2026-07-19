@@ -8,7 +8,6 @@ export const LANDING_LAYOUT = {
   paddingY: PAGE_LAYOUT.paddingY,
   titleSize: 40,
   subtitleSize: 12,
-  captionSize: 8,
   buttonTextSize: 14,
   headerToPreviewGap: 24,
   previewToSelectorGap: 20,
