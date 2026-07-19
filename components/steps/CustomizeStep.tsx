@@ -23,8 +23,6 @@ import {
   PinkButton,
 } from "@/components/ui/PageShell";
 
-const STACKED_LAYOUT_MAX_HEIGHT = 740;
-
 export function CustomizeStep() {
   const {
     frame,
@@ -51,15 +49,7 @@ export function CustomizeStep() {
     TEXT_COLOR_SWATCHES.length,
     contentWidth,
   );
-  const stackedLayout = viewportHeight <= STACKED_LAYOUT_MAX_HEIGHT;
-  const previewMaxHeight = getCustomizePreviewMaxHeight(
-    viewportHeight,
-    FRAME_COLOR_SWATCHES.length,
-    TEXT_COLOR_SWATCHES.length,
-    contentWidth,
-    swatchSize,
-    stackedLayout,
-  );
+  const previewMaxHeight = getCustomizePreviewMaxHeight(viewportHeight);
   const previewDimensions = scaleBoxToFit(
     previewWidth,
     previewWidth / frame.aspectRatio,
@@ -135,7 +125,7 @@ export function CustomizeStep() {
         </h2>
 
         <div
-          className="customize-layout-row mx-auto flex w-fit max-w-full shrink-0 items-center"
+          className="customize-layout-row mx-auto flex w-fit max-w-full shrink-0 items-start"
           style={{
             marginTop: CUSTOMIZE_LAYOUT.titleToContentGap,
             gap: CUSTOMIZE_LAYOUT.columnGap,
@@ -213,6 +203,9 @@ export function CustomizeStep() {
                   paddingInline: CUSTOMIZE_LAYOUT.inputPaddingX,
                   paddingBlock: CUSTOMIZE_LAYOUT.inputPaddingY,
                   fontSize: CUSTOMIZE_LAYOUT.inputFontSize,
+                  minHeight: CUSTOMIZE_LAYOUT.inputMinHeight,
+                  height: CUSTOMIZE_LAYOUT.inputMinHeight,
+                  lineHeight: 1,
                 }}
               />
             </div>

@@ -28,6 +28,7 @@ export const CUSTOMIZE_LAYOUT = {
   inputPaddingX: 8,
   inputPaddingY: 4,
   inputFontSize: 14,
+  inputMinHeight: 32,
 } as const;
 
 /** Left preview + right controls widths inside the 329px content column. */
@@ -112,7 +113,7 @@ function getSwatchGridHeight(
   return rows * swatchSize + Math.max(0, rows - 1) * gap;
 }
 
-/** Approximate fixed height of swatch controls below the preview. */
+/** Approximate fixed height of swatch controls beside the preview. */
 export function estimateCustomizeControlsHeight(
   frameSwatchCount: number,
   textSwatchCount: number,
@@ -121,7 +122,7 @@ export function estimateCustomizeControlsHeight(
 ): number {
   const layout = CUSTOMIZE_LAYOUT;
   const labelHeight = 12;
-  const inputHeight = layout.inputPaddingY * 2 + layout.inputFontSize + 2;
+  const inputHeight = layout.inputMinHeight;
 
   return (
     labelHeight +
@@ -136,24 +137,8 @@ export function estimateCustomizeControlsHeight(
   );
 }
 
-/** Max preview height for side-by-side or stacked customize layout. */
-export function getCustomizePreviewMaxHeight(
-  viewportHeight: number,
-  frameSwatchCount: number,
-  textSwatchCount: number,
-  contentWidth: number,
-  swatchSize?: number,
-  stacked = false,
-): number {
-  const { controlsWidth } = getCustomizeColumnWidths(contentWidth);
-  const size = swatchSize ?? getCustomizeSwatchSize(controlsWidth);
-  const controlsHeight = estimateCustomizeControlsHeight(
-    frameSwatchCount,
-    textSwatchCount,
-    controlsWidth,
-    size,
-  );
-
+/** Max preview height for side-by-side customize layout. */
+export function getCustomizePreviewMaxHeight(viewportHeight: number): number {
   const reserved =
     getResponsivePaddingY(viewportHeight) * 2 +
     52 +
@@ -163,16 +148,7 @@ export function getCustomizePreviewMaxHeight(
     PAGE_LAYOUT.primaryButton.height +
     16;
 
-  const rowMaxHeight = Math.max(72, viewportHeight - reserved);
-
-  if (stacked) {
-    return Math.max(
-      72,
-      rowMaxHeight - controlsHeight - CUSTOMIZE_LAYOUT.columnGap,
-    );
-  }
-
-  return Math.min(rowMaxHeight, controlsHeight);
+  return Math.max(72, viewportHeight - reserved);
 }
 
 /** Swatch ring — inner stroke always; pink outer + black overlay when selected. */
