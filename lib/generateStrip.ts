@@ -8,6 +8,8 @@ import {
 import {
   clampStripCaption,
   getFittedStripCaptionFontSize,
+  getStripCaptionPositionY,
+  STRIP_CAPTION_Y_OFFSET_PX,
 } from "@/lib/stripCaption";
 
 const EXPORT_WIDTH = 1200;
@@ -164,7 +166,11 @@ export async function generateStrip(
     ctx.fillText(
       caption,
       stripWidth / 2,
-      frame.captionY * stripHeight,
+      getStripCaptionPositionY(
+        frame.captionY,
+        stripHeight,
+        frame.captionYOffset ?? STRIP_CAPTION_Y_OFFSET_PX,
+      ),
     );
   }
 
@@ -178,4 +184,51 @@ export function downloadStrip(dataUrl: string, filename?: string): void {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+}
+
+function isMobileGalleryTarget(): boolean {
+  if (typeof navigator === "undefined") return false;
+  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
+
+async function dataUrlToPngFile(
+  dataUrl: string,
+  filename: string,
+): Promise<File> {
+  const response = await fetch(dataUrl);
+  const blob = await response.blob();
+  return new File([blob], filename, { type: "image/png" });
+}
+
+function canSharePngFile(file: File): boolean {
+  if (typeof navigator.share !== "function") return false;
+  return !navigator.canShare || navigator.canShare({ files: [file] });
+}
+
+/**
+ * Save strip to Photos/Gallery on mobile via the system share sheet
+ * (choose "Save Image" / "Save to Photos"). Falls back to file download on desktop.
+ */
+export async function saveStrip(
+  dataUrl: string,
+  filename?: string,
+): Promise<void> {
+  const name = filename ?? `photobooth-${Date.now()}.png`;
+
+  if (isMobileGalleryTarget()) {
+    const file = await dataUrlToPngFile(dataUrl, name);
+
+    if (canSharePngFile(file)) {
+      try {
+        await navigator.share({ files: [file] });
+        return;
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") {
+          return;
+        }
+      }
+    }
+  }
+
+  downloadStrip(dataUrl, name);
 }

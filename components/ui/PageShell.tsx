@@ -297,7 +297,7 @@ export function CountdownPicker({ value, onChange }: CountdownPickerProps) {
               key={seconds}
               type="button"
               onClick={() => onChange(seconds)}
-              className="font-mono m-0 flex shrink-0 items-center justify-center rounded-full border-0 bg-white p-0 text-xs transition-colors"
+              className="font-mono m-0 flex shrink-0 items-center justify-center rounded-full border-0 p-0 text-xs transition-colors"
               style={{
                 width: countdown.size,
                 height: countdown.size,
@@ -307,6 +307,7 @@ export function CountdownPicker({ value, onChange }: CountdownPickerProps) {
                 maxHeight: countdown.size,
                 aspectRatio: "1 / 1",
                 boxSizing: "border-box",
+                backgroundColor: isSelected ? countdown.selectedBg : countdown.unselectedBg,
                 color: isSelected ? countdown.selectedColor : countdown.unselectedColor,
               }}
             >

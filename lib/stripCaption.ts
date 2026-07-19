@@ -7,7 +7,18 @@ export const STRIP_CAPTION_MAX_WIDTH_RATIO = 0.86;
 /** Hard character limit for caption input and rendering. */
 export const STRIP_CAPTION_MAX_LENGTH = 20;
 
+/** Downward nudge for caption text (px at export scale). */
+export const STRIP_CAPTION_Y_OFFSET_PX = 2;
+
 export const STRIP_CAPTION_FONT_FAMILY = "Caveat, cursive";
+
+export function getStripCaptionPositionY(
+  captionY: number,
+  stripHeight: number,
+  yOffsetPx: number = STRIP_CAPTION_Y_OFFSET_PX,
+): number {
+  return captionY * stripHeight + yOffsetPx;
+}
 
 export function clampStripCaption(text: string): string {
   return text.slice(0, STRIP_CAPTION_MAX_LENGTH);
