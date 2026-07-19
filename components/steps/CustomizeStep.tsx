@@ -10,7 +10,7 @@ import {
   getCustomizeControlsContentWidth,
   getCustomizePreviewMaxHeight,
 } from "@/lib/customizeLayout";
-import { STRIP_CAPTION_MAX_LENGTH } from "@/lib/stripCaption";
+import { STRIP_CAPTION_MAX_LENGTH, STRIP_CUSTOMIZE_PRINT_CAPTION_EXTRA_OFFSET_PX } from "@/lib/stripCaption";
 import { generateStrip } from "@/lib/generateStrip";
 import { scaleBoxToFit } from "@/lib/responsiveLayout";
 import { useAvailableContentWidth } from "@/hooks/useAvailableContentWidth";
@@ -76,7 +76,14 @@ export function CustomizeStep() {
     }
 
     debounceRef.current = window.setTimeout(() => {
-      generateStrip(filledPhotos, frame, frameColor, textColor, captionText)
+      generateStrip(
+        filledPhotos,
+        frame,
+        frameColor,
+        textColor,
+        captionText,
+        STRIP_CUSTOMIZE_PRINT_CAPTION_EXTRA_OFFSET_PX,
+      )
         .then((url) => setPreviewUrl(url))
         .catch(() => setPreviewUrl(null));
     }, 150);
@@ -96,6 +103,7 @@ export function CustomizeStep() {
       frameColor,
       textColor,
       captionText,
+      STRIP_CUSTOMIZE_PRINT_CAPTION_EXTRA_OFFSET_PX,
     );
     setFinalStripUrl(url);
     goToStep("print");
