@@ -13,8 +13,11 @@ export const ADD_PHOTO_LAYOUT = {
     fontSize: 14,
     padding: 8,
     radius: 6,
-    selectedColor: "#000000",
-    unselectedColor: "#CACACA",
+    /** Sliding pill track + indicator (Option C). */
+    trackBg: "#FFEDF1",
+    pillBg: "#FFFFFF",
+    pillInset: 2,
+    textColor: "#000000",
     borderColor: "#FFDEE6",
   },
   countdown: {
