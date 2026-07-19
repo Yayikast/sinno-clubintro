@@ -16,6 +16,7 @@ import { STRIP_CAPTION_MAX_LENGTH, STRIP_CUSTOMIZE_PRINT_CAPTION_EXTRA_OFFSET_PX
 import { generateStrip } from "@/lib/generateStrip";
 import { scaleBoxToFit } from "@/lib/responsiveLayout";
 import { useAvailableContentWidth } from "@/hooks/useAvailableContentWidth";
+import { useStableContentHeight } from "@/hooks/useStableContentHeight";
 import { useViewportLayout } from "@/hooks/useViewportLayout";
 import {
   ColorSwatchGrid,
@@ -43,7 +44,8 @@ export function CustomizeStep() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const debounceRef = useRef<number | null>(null);
   const availableContentWidth = useAvailableContentWidth();
-  const { contentHeight } = useViewportLayout({ hasFooter: true });
+  const { contentHeight: liveContentHeight } = useViewportLayout({ hasFooter: true });
+  const layoutContentHeight = useStableContentHeight(liveContentHeight);
   const contentWidth = Math.min(CUSTOMIZE_LAYOUT.contentWidth, availableContentWidth);
   const { previewWidth, controlsWidth } = getCustomizeColumnWidths(contentWidth);
   const { width: controlsContentWidth, swatchSize } = getCustomizeControlsContentWidth(
@@ -57,8 +59,8 @@ export function CustomizeStep() {
     controlsWidth,
     swatchSize,
   );
-  const previewMaxHeight = getCustomizePreviewMaxHeight(contentHeight, controlsHeight);
-  const availableRowHeight = getCustomizeAvailableRowHeight(contentHeight);
+  const previewMaxHeight = getCustomizePreviewMaxHeight(layoutContentHeight, controlsHeight);
+  const availableRowHeight = getCustomizeAvailableRowHeight(layoutContentHeight);
   const previewDimensions = scaleBoxToFit(
     previewWidth,
     previewWidth / frame.aspectRatio,
@@ -66,7 +68,9 @@ export function CustomizeStep() {
     previewMaxHeight,
   );
   const rowHeight = Math.max(previewDimensions.height, controlsHeight);
-  const mainScroll = rowHeight > availableRowHeight + 0.5;
+  const liveAvailableRowHeight = getCustomizeAvailableRowHeight(liveContentHeight);
+  const mainScroll =
+    rowHeight > availableRowHeight + 0.5 || rowHeight > liveAvailableRowHeight + 0.5;
 
   useEffect(() => {
     const filledPhotos = photos.filter((photo): photo is string => photo !== null);
