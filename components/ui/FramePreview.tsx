@@ -142,8 +142,8 @@ export function FramePreview({
                 <Image
                   src="/figma/icons/gallery.svg"
                   alt=""
-                  width={24}
-                  height={24}
+                  width={20}
+                  height={20}
                   className="opacity-60"
                 />
               </div>
@@ -159,8 +159,8 @@ export function FramePreview({
                 <Image
                   src="/figma/icons/gallery.svg"
                   alt=""
-                  width={24}
-                  height={24}
+                  width={20}
+                  height={20}
                 />
               </div>
             ) : null}

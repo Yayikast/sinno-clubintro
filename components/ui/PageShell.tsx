@@ -215,31 +215,45 @@ interface ModeTabsProps {
 
 export function ModeTabs({ mode, onChange }: ModeTabsProps) {
   const tabs = ADD_PHOTO_LAYOUT.modeTabs;
+  const pillInset = tabs.pillInset;
+  const pillSpan = tabs.gap + pillInset * 2;
 
   return (
     <div
-      className="mx-auto box-border flex w-full min-w-0 max-w-full"
+      className="relative mx-auto box-border grid w-full min-w-0 max-w-full grid-cols-2"
       style={{
         width: "100%",
         maxWidth: tabs.width,
         height: tabs.height,
         gap: tabs.gap,
+        padding: pillInset,
         borderRadius: tabs.radius,
-        borderColor: tabs.borderColor,
+        backgroundColor: tabs.trackBg,
       }}
     >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute transition-[left] duration-200 ease-out"
+        style={{
+          top: pillInset,
+          bottom: pillInset,
+          left: mode === "take" ? pillInset : `calc(50% + ${tabs.gap / 2}px)`,
+          width: `calc((100% - ${pillSpan}px) / 2)`,
+          borderRadius: tabs.radius - pillInset,
+          backgroundColor: tabs.pillBg,
+        }}
+      />
+
       <button
         type="button"
         onClick={() => onChange("take")}
-        className="font-cursive m-0 box-border flex flex-1 items-center justify-center border border-solid p-0 text-center font-normal transition-colors rounded-[6px]"
+        className="font-cursive relative z-10 m-0 box-border flex items-center justify-center border-0 bg-transparent p-0 text-center font-normal"
         style={{
-          height: tabs.height,
-          minHeight: tabs.height,
-          maxHeight: tabs.height,
+          height: tabs.height - pillInset * 2,
+          minHeight: tabs.height - pillInset * 2,
+          maxHeight: tabs.height - pillInset * 2,
           fontSize: tabs.fontSize,
-          borderColor: tabs.borderColor,
-          backgroundColor: mode === "take" ? "#FFFFFF" : "rgba(255, 255, 255, 0.45)",
-          color: mode === "take" ? tabs.selectedColor : tabs.unselectedColor,
+          color: tabs.textColor,
         }}
       >
         Take Photos
@@ -247,15 +261,13 @@ export function ModeTabs({ mode, onChange }: ModeTabsProps) {
       <button
         type="button"
         onClick={() => onChange("upload")}
-        className="font-cursive m-0 box-border flex flex-1 items-center justify-center border border-solid p-0 text-center font-normal transition-colors rounded-[6px]"
+        className="font-cursive relative z-10 m-0 box-border flex items-center justify-center border-0 bg-transparent p-0 text-center font-normal"
         style={{
-          height: tabs.height,
-          minHeight: tabs.height,
-          maxHeight: tabs.height,
+          height: tabs.height - pillInset * 2,
+          minHeight: tabs.height - pillInset * 2,
+          maxHeight: tabs.height - pillInset * 2,
           fontSize: tabs.fontSize,
-          borderColor: tabs.borderColor,
-          backgroundColor: mode === "upload" ? "#FFFFFF" : "rgba(255, 255, 255, 0.45)",
-          color: mode === "upload" ? tabs.selectedColor : tabs.unselectedColor,
+          color: tabs.textColor,
         }}
       >
         Upload
