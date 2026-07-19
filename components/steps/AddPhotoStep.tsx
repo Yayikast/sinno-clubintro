@@ -10,7 +10,7 @@ import Image from "next/image";
 import Webcam from "react-webcam";
 import { SlotPhoto } from "@/components/ui/SlotPhoto";
 import { usePhotobooth } from "@/context/PhotoboothProvider";
-import { ADD_PHOTO_LAYOUT, getAddPhotoThumbnailSizes, getUploadPreviewSize } from "@/lib/addPhotoLayout";
+import { ADD_PHOTO_LAYOUT, getAddPhotoThumbnailRowWidth, getAddPhotoThumbnailSizes, getUploadPreviewSize } from "@/lib/addPhotoLayout";
 import {
   cropPhotoToSlot,
 } from "@/lib/photoDisplay";
@@ -78,10 +78,9 @@ export function AddPhotoStep() {
   const availableContentWidth = useAvailableContentWidth();
   const { contentWidth, contentHeight } = useViewportLayout({ hasFooter: true });
 
-  const thumbnailSizes = getAddPhotoThumbnailSizes(
-    frame.id,
-    Math.min(ADD_PHOTO_LAYOUT.viewfinder.width, availableContentWidth),
-  );
+  const thumbnailSizes = getAddPhotoThumbnailSizes(frame.id, contentWidth, true);
+  const thumbnailRowWidth = getAddPhotoThumbnailRowWidth(thumbnailSizes);
+  const thumbnailRowScrollable = thumbnailRowWidth > contentWidth + 0.5;
   const uploadPreviewSize = getUploadPreviewSize(frame.aspectRatio);
   const uploadLayout = ADD_PHOTO_LAYOUT.upload;
   const takeSpacing = ADD_PHOTO_LAYOUT.takePhoto;
@@ -408,11 +407,15 @@ export function AddPhotoStep() {
               </div>
 
               <div
-                className="flex w-full min-w-0 items-center justify-center overflow-hidden"
+                className={`flex w-full min-w-0 items-center ${
+                  thumbnailRowScrollable
+                    ? "justify-start overflow-x-auto overscroll-x-contain"
+                    : "justify-center overflow-hidden"
+                }`}
                 style={{
-                  width: viewfinderDimensions.width,
-                  maxWidth: "100%",
+                  maxWidth: contentWidth,
                   gap: ADD_PHOTO_LAYOUT.thumbnail.gap,
+                  WebkitOverflowScrolling: "touch",
                 }}
               >
                 {photos.map((photo, index) => {
@@ -423,6 +426,7 @@ export function AddPhotoStep() {
                   return (
                     <div
                       key={index}
+                      className="shrink-0"
                       onMouseEnter={() => photo && setHoverSlotIndex(index)}
                       onMouseLeave={() => setHoverSlotIndex(null)}
                     >
