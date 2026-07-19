@@ -27,7 +27,6 @@ import { FramePreview } from "@/components/ui/FramePreview";
 import { Countdown } from "@/components/camera/Countdown";
 import { CameraFlash } from "@/components/camera/CameraFlash";
 import { useCountdown } from "@/hooks/useCountdown";
-import { useAvailableContentWidth } from "@/hooks/useAvailableContentWidth";
 import { useViewportLayout } from "@/hooks/useViewportLayout";
 import { useCamera, VIDEO_CONSTRAINTS } from "@/hooks/useCamera";
 import { playShutterSound } from "@/lib/shutterSound";
@@ -75,28 +74,20 @@ export function AddPhotoStep() {
     handleUserMediaError,
   } = useCamera({ webcamRef, initialActive: false });
 
-  const availableContentWidth = useAvailableContentWidth();
   const { contentWidth, contentHeight } = useViewportLayout({ hasFooter: true });
+  const captureColumnWidth = contentWidth;
+  const captureViewfinderHeight = Math.min(
+    (captureColumnWidth / ADD_PHOTO_LAYOUT.viewfinder.width) *
+      ADD_PHOTO_LAYOUT.viewfinder.height,
+    Math.max(180, contentHeight * 0.42),
+  );
 
-  const thumbnailSizes = getAddPhotoThumbnailSizes(frame.id, contentWidth, true);
+  const thumbnailSizes = getAddPhotoThumbnailSizes(frame.id, captureColumnWidth, true);
   const thumbnailRowWidth = getAddPhotoThumbnailRowWidth(thumbnailSizes);
-  const thumbnailRowScrollable = thumbnailRowWidth > contentWidth + 0.5;
+  const thumbnailRowScrollable = thumbnailRowWidth > captureColumnWidth + 0.5;
   const uploadPreviewSize = getUploadPreviewSize(frame.aspectRatio);
   const uploadLayout = ADD_PHOTO_LAYOUT.upload;
   const takeSpacing = ADD_PHOTO_LAYOUT.takePhoto;
-  const captureWidth = Math.min(
-    ADD_PHOTO_LAYOUT.viewfinder.width,
-    availableContentWidth,
-  );
-  const captureHeight =
-    (captureWidth / ADD_PHOTO_LAYOUT.viewfinder.width) *
-    ADD_PHOTO_LAYOUT.viewfinder.height;
-  const viewfinderDimensions = scaleBoxToFit(
-    captureWidth,
-    captureHeight,
-    captureWidth,
-    Math.max(180, contentHeight * 0.42),
-  );
   const uploadWidthLimited = Math.min(uploadPreviewSize.width, contentWidth);
   const uploadHeightFromWidth =
     (uploadWidthLimited / uploadPreviewSize.width) * uploadPreviewSize.height;
@@ -348,18 +339,17 @@ export function AddPhotoStep() {
             </div>
 
             <div
-              className="flex w-full min-w-0 max-w-full flex-col items-center"
+              className="mx-auto flex w-full min-w-0 max-w-full flex-col"
               style={{
+                width: captureColumnWidth,
                 marginTop: takeSpacing.countdownToCaptureGap,
                 gap: takeSpacing.viewfinderToThumbnailsGap,
               }}
             >
               <div
-                className="relative w-full max-w-full overflow-hidden rounded-lg"
+                className="relative w-full overflow-hidden rounded-lg"
                 style={{
-                  width: viewfinderDimensions.width,
-                  height: viewfinderDimensions.height,
-                  maxWidth: "100%",
+                  height: captureViewfinderHeight,
                   backgroundColor: ADD_PHOTO_LAYOUT.viewfinder.background,
                 }}
               >
@@ -413,7 +403,6 @@ export function AddPhotoStep() {
                     : "justify-center overflow-hidden"
                 }`}
                 style={{
-                  maxWidth: contentWidth,
                   gap: ADD_PHOTO_LAYOUT.thumbnail.gap,
                   WebkitOverflowScrolling: "touch",
                 }}
