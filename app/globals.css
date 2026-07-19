@@ -67,11 +67,9 @@ button {
   min-height: 44px;
 }
 
-@media (max-height: 740px) {
-  .customize-layout-row {
-    flex-direction: column;
-    align-items: center;
-  }
+.customize-layout-row {
+  flex-direction: row;
+  align-items: flex-start;
 }
 
 @media (max-height: 680px) {
