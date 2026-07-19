@@ -14,6 +14,7 @@ import { ADD_PHOTO_LAYOUT, getAddPhotoThumbnailSizes, getUploadPreviewSize } fro
 import {
   cropPhotoToSlot,
 } from "@/lib/photoDisplay";
+import { scaleBoxToFit } from "@/lib/responsiveLayout";
 import {
   CountdownPicker,
   ActionFooter,
@@ -27,6 +28,7 @@ import { Countdown } from "@/components/camera/Countdown";
 import { CameraFlash } from "@/components/camera/CameraFlash";
 import { useCountdown } from "@/hooks/useCountdown";
 import { useAvailableContentWidth } from "@/hooks/useAvailableContentWidth";
+import { useViewportLayout } from "@/hooks/useViewportLayout";
 import { useCamera, VIDEO_CONSTRAINTS } from "@/hooks/useCamera";
 import { playShutterSound } from "@/lib/shutterSound";
 
@@ -74,6 +76,7 @@ export function AddPhotoStep() {
   } = useCamera({ webcamRef, initialActive: false });
 
   const availableContentWidth = useAvailableContentWidth();
+  const { contentWidth, contentHeight } = useViewportLayout({ hasFooter: true });
 
   const thumbnailSizes = getAddPhotoThumbnailSizes(
     frame.id,
@@ -89,6 +92,21 @@ export function AddPhotoStep() {
   const captureHeight =
     (captureWidth / ADD_PHOTO_LAYOUT.viewfinder.width) *
     ADD_PHOTO_LAYOUT.viewfinder.height;
+  const viewfinderDimensions = scaleBoxToFit(
+    captureWidth,
+    captureHeight,
+    captureWidth,
+    Math.max(180, contentHeight * 0.42),
+  );
+  const uploadWidthLimited = Math.min(uploadPreviewSize.width, contentWidth);
+  const uploadHeightFromWidth =
+    (uploadWidthLimited / uploadPreviewSize.width) * uploadPreviewSize.height;
+  const uploadPreviewDimensions = scaleBoxToFit(
+    uploadWidthLimited,
+    uploadHeightFromWidth,
+    contentWidth,
+    Math.max(180, contentHeight * 0.55),
+  );
 
   const performCapture = useCallback(() => {
     const slotIndex = captureSlotIndexRef.current;
@@ -340,8 +358,8 @@ export function AddPhotoStep() {
               <div
                 className="relative w-full max-w-full overflow-hidden rounded-lg"
                 style={{
-                  width: captureWidth,
-                  height: captureHeight,
+                  width: viewfinderDimensions.width,
+                  height: viewfinderDimensions.height,
                   maxWidth: "100%",
                   backgroundColor: ADD_PHOTO_LAYOUT.viewfinder.background,
                 }}
@@ -392,7 +410,7 @@ export function AddPhotoStep() {
               <div
                 className="flex w-full min-w-0 items-center justify-center overflow-hidden"
                 style={{
-                  width: captureWidth,
+                  width: viewfinderDimensions.width,
                   maxWidth: "100%",
                   gap: ADD_PHOTO_LAYOUT.thumbnail.gap,
                 }}
@@ -446,12 +464,8 @@ export function AddPhotoStep() {
             <FramePreview
               frame={frame}
               photos={photos}
-              width={Math.min(uploadPreviewSize.width, availableContentWidth)}
-              height={
-                (Math.min(uploadPreviewSize.width, availableContentWidth) /
-                  uploadPreviewSize.width) *
-                uploadPreviewSize.height
-              }
+              width={uploadPreviewDimensions.width}
+              height={uploadPreviewDimensions.height}
               captionText={captionText}
               showPlaceholders
               placeholderBg={uploadLayout.placeholderBg}
