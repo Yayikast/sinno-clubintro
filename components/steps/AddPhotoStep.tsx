@@ -75,16 +75,25 @@ export function AddPhotoStep() {
   } = useCamera({ webcamRef, initialActive: false });
 
   const { contentWidth, contentHeight } = useViewportLayout({ hasFooter: true });
-  const captureColumnWidth = contentWidth;
-  const captureViewfinderHeight = Math.min(
-    (captureColumnWidth / ADD_PHOTO_LAYOUT.viewfinder.width) *
-      ADD_PHOTO_LAYOUT.viewfinder.height,
+  const captureWidth = Math.min(ADD_PHOTO_LAYOUT.viewfinder.width, contentWidth);
+  const captureHeight =
+    (captureWidth / ADD_PHOTO_LAYOUT.viewfinder.width) *
+    ADD_PHOTO_LAYOUT.viewfinder.height;
+  const viewfinderDimensions = scaleBoxToFit(
+    captureWidth,
+    captureHeight,
+    captureWidth,
     Math.max(180, contentHeight * 0.42),
   );
 
-  const thumbnailSizes = getAddPhotoThumbnailSizes(frame.id, captureColumnWidth, true);
+  const thumbnailSizes = getAddPhotoThumbnailSizes(
+    frame.id,
+    viewfinderDimensions.width,
+    true,
+  );
   const thumbnailRowWidth = getAddPhotoThumbnailRowWidth(thumbnailSizes);
-  const thumbnailRowScrollable = thumbnailRowWidth > captureColumnWidth + 0.5;
+  const thumbnailRowScrollable =
+    thumbnailRowWidth > viewfinderDimensions.width + 0.5;
   const uploadPreviewSize = getUploadPreviewSize(frame.aspectRatio);
   const uploadLayout = ADD_PHOTO_LAYOUT.upload;
   const takeSpacing = ADD_PHOTO_LAYOUT.takePhoto;
@@ -341,7 +350,8 @@ export function AddPhotoStep() {
             <div
               className="mx-auto flex w-full min-w-0 max-w-full flex-col"
               style={{
-                width: captureColumnWidth,
+                width: viewfinderDimensions.width,
+                maxWidth: "100%",
                 marginTop: takeSpacing.countdownToCaptureGap,
                 gap: takeSpacing.viewfinderToThumbnailsGap,
               }}
@@ -349,7 +359,7 @@ export function AddPhotoStep() {
               <div
                 className="relative w-full overflow-hidden rounded-lg"
                 style={{
-                  height: captureViewfinderHeight,
+                  height: viewfinderDimensions.height,
                   backgroundColor: ADD_PHOTO_LAYOUT.viewfinder.background,
                 }}
               >
