@@ -2,13 +2,14 @@
 
 import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
 import type Webcam from "react-webcam";
+import {
+  boostCameraResolution,
+  captureVideoFrame,
+  VIDEO_CONSTRAINTS,
+} from "@/lib/cameraCapture";
 import type { CameraError } from "@/types/photobooth";
 
-export const VIDEO_CONSTRAINTS: MediaTrackConstraints = {
-  facingMode: "user",
-  width: { ideal: 1080 },
-  height: { ideal: 1920 },
-};
+export { VIDEO_CONSTRAINTS };
 
 function mapMediaError(error: unknown): CameraError {
   if (typeof error === "string") {
@@ -89,8 +90,8 @@ export function useCamera({ webcamRef, initialActive = false }: UseCameraOptions
   }, []);
 
   const capturePhoto = useCallback((): string | null => {
-    const webcam = webcamRef.current;
-    if (!webcam) {
+    const video = webcamRef.current?.video;
+    if (!video) {
       setError({
         type: "capture-failed",
         message: "Click Capture to try again.",
@@ -98,8 +99,7 @@ export function useCamera({ webcamRef, initialActive = false }: UseCameraOptions
       return null;
     }
 
-    // Native resolution — crop to slot aspect in the caller (never stretch).
-    const screenshot = webcam.getScreenshot();
+    const screenshot = captureVideoFrame(video, { mirrored: true });
     if (!screenshot) {
       setError({
         type: "capture-failed",
@@ -117,8 +117,11 @@ export function useCamera({ webcamRef, initialActive = false }: UseCameraOptions
 
   const handleUserMedia = useCallback((stream: MediaStream) => {
     streamRef.current = stream;
-    setIsReady(true);
     setError(null);
+
+    void boostCameraResolution(stream).finally(() => {
+      setIsReady(true);
+    });
   }, []);
 
   const handleUserMediaError = useCallback((mediaError: string | DOMException) => {

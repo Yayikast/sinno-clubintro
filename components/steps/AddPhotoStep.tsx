@@ -29,6 +29,7 @@ import { useCountdown } from "@/hooks/useCountdown";
 import { useViewportLayout } from "@/hooks/useViewportLayout";
 import { scaleBoxToFit } from "@/lib/responsiveLayout";
 import { useCamera, VIDEO_CONSTRAINTS } from "@/hooks/useCamera";
+import { CAPTURE_JPEG_QUALITY } from "@/lib/cameraCapture";
 import { playShutterSound } from "@/lib/shutterSound";
 
 export function AddPhotoStep() {
@@ -375,6 +376,7 @@ export function AddPhotoStep() {
                     audio={false}
                     mirrored
                     screenshotFormat="image/jpeg"
+                    screenshotQuality={CAPTURE_JPEG_QUALITY}
                     videoConstraints={VIDEO_CONSTRAINTS}
                     onUserMedia={handleUserMedia}
                     onUserMediaError={handleUserMediaError}
