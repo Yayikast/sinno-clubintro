@@ -5,6 +5,10 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "PhotoBooth",
   description: "Capture the moments — mobile photobooth web app",
+  icons: {
+    icon: "/figma/logo/Logo.svg",
+    apple: "/figma/logo/Logo.svg",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
