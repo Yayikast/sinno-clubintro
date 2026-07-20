@@ -1,10 +1,12 @@
-export const COLOR_PICKER_PATH = "/figma/swatches/color-picker.png";
+import { theme } from "@/themes/active";
+import { COLOR_PICKER_SWATCH_ID } from "@/lib/colorSwatch";
+
+export { COLOR_PICKER_SWATCH_ID };
+
+export const COLOR_PICKER_PATH = theme.assets.colorPicker;
 
 /** @deprecated Use COLOR_PICKER_PATH */
 export const COLOR_WHEEL_PATH = COLOR_PICKER_PATH;
-
-/** Sentinel value for the picker slot — never stored as the selected color. */
-export const COLOR_PICKER_SWATCH_ID = "picker";
 
 /** Legacy rainbow fill id kept for older saved state / hot-reload bundles. */
 export const RAINBOW_FILL_ID = "gradient:rainbow";
@@ -25,9 +27,9 @@ export function getPatternPath(value: string): string | null {
   if (!isPatternFill(value)) return null;
   const id = value.slice("pattern:".length);
   if (id.includes(".")) {
-    return `/figma/patterns/${id}`;
+    return `${theme.assets.patternsBase}/${id}`;
   }
-  return `/figma/patterns/${id}.png`;
+  return `${theme.assets.patternsBase}/${id}.png`;
 }
 
 export function getSwatchPreviewStyle(value: string): {

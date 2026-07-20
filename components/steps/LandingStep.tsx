@@ -1,8 +1,7 @@
 "use client";
 
 import { usePhotobooth } from "@/context/PhotoboothProvider";
-import { FRAMES } from "@/lib/frames";
-import { getLandingPreviewSize, LANDING_LAYOUT } from "@/lib/landingLayout";
+import { theme, getLandingPreviewSize } from "@/themes";
 import { scaleBoxToFit } from "@/lib/responsiveLayout";
 import { useViewportLayout } from "@/hooks/useViewportLayout";
 import { PageContent, PageShell, PinkButton, ActionFooter } from "@/components/ui/PageShell";
@@ -10,11 +9,13 @@ import { FramePreview, FrameSelector } from "@/components/ui/FramePreview";
 
 export function LandingStep() {
   const { selectedFrameId, selectFrameId, confirmFrameSelection } = usePhotobooth();
-  const frame = FRAMES.find((item) => item.id === selectedFrameId) ?? FRAMES[2];
+  const { list: frames, defaults } = theme.frames;
+  const landingLayout = theme.layout.landing;
+  const frame = frames.find((item) => item.id === selectedFrameId) ?? frames[2];
   const previewSize = getLandingPreviewSize(frame.aspectRatio);
   const { contentWidth, contentHeight } = useViewportLayout({
     hasFooter: true,
-    designPaddingY: LANDING_LAYOUT.paddingY,
+    designPaddingY: landingLayout.paddingY,
   });
   const widthLimited = Math.min(previewSize.width, contentWidth);
   const heightFromWidth =
@@ -28,18 +29,20 @@ export function LandingStep() {
 
   return (
     <PageShell
-      maxWidth={LANDING_LAYOUT.frameWidth}
-      paddingX={LANDING_LAYOUT.paddingX}
-      paddingY={LANDING_LAYOUT.paddingY}
+      maxWidth={landingLayout.frameWidth}
+      paddingX={landingLayout.paddingX}
+      paddingY={landingLayout.paddingY}
       footer={
         <ActionFooter>
-          <PinkButton onClick={confirmFrameSelection}>Select</PinkButton>
+          <PinkButton onClick={confirmFrameSelection}>
+            {theme.copy.landing.selectButton}
+          </PinkButton>
         </ActionFooter>
       }
     >
       <PageContent
         className="min-h-0 w-full min-w-0 flex-1"
-        style={{ marginTop: LANDING_LAYOUT.headerToPreviewGap }}
+        style={{ marginTop: landingLayout.headerToPreviewGap }}
       >
         <div className="landing-preview-area flex min-h-0 flex-1 items-center justify-center">
           <FramePreview
@@ -47,25 +50,33 @@ export function LandingStep() {
             width={previewDimensions.width}
             height={previewDimensions.height}
             showPlaceholders={false}
+            captionText={defaults.caption}
+            textColor={defaults.textColor}
           />
         </div>
 
-        <div style={{ marginTop: LANDING_LAYOUT.previewToSelectorGap }}>
+        <div style={{ marginTop: landingLayout.previewToSelectorGap }}>
           <FrameSelector
-            frames={FRAMES}
+            frames={frames}
             selectedId={selectedFrameId}
             onSelect={(id) => selectFrameId(id as typeof selectedFrameId)}
-            itemHeight={LANDING_LAYOUT.selectorHeight}
-            selectedSize={LANDING_LAYOUT.selectorSelectedSize}
-            selectedBg={LANDING_LAYOUT.selectorSelectedBg}
-            selectedRadius={LANDING_LAYOUT.selectorSelectedRadius}
-            gap={LANDING_LAYOUT.selectorGap}
+            itemHeight={landingLayout.selectorHeight}
+            selectedSize={landingLayout.selectorSelectedSize}
+            selectedBg={landingLayout.selectorSelectedBg}
+            selectedRadius={landingLayout.selectorSelectedRadius}
+            gap={landingLayout.selectorGap}
           />
         </div>
+
+        {theme.copy.landing.credit ? (
+          <p className="font-mono text-center text-xs text-black/45">
+            {theme.copy.landing.credit}
+          </p>
+        ) : null}
 
         <div
           className="shrink-0"
-          style={{ height: LANDING_LAYOUT.selectorToButtonGap }}
+          style={{ height: landingLayout.selectorToButtonGap }}
         />
       </PageContent>
     </PageShell>

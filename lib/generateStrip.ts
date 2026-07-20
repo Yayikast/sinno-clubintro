@@ -1,4 +1,5 @@
 import type { FrameConfig } from "@/types/photobooth";
+import { theme } from "@/themes/active";
 import {
   applyCanvasFill,
   getCaptionFillStyle,
@@ -14,6 +15,8 @@ import {
 } from "@/lib/stripCaption";
 
 const EXPORT_WIDTH = 1200;
+const captionFontFamily = theme.fonts.captionFamily;
+const downloadPrefix = theme.brand.downloadPrefix;
 
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -157,12 +160,12 @@ export async function generateStrip(
       caption,
       frame.captionFontSizeScale ?? 1,
       (size) => {
-      ctx.font = `${size}px Caveat, cursive`;
+      ctx.font = `${size}px ${captionFontFamily}`;
       return ctx.measureText(caption).width;
     },
     );
     ctx.fillStyle = getCaptionFillStyle(ctx, textColor, stripWidth);
-    ctx.font = `${fontSize}px Caveat, cursive`;
+    ctx.font = `${fontSize}px ${captionFontFamily}`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     const captionYOffset =
@@ -181,7 +184,7 @@ export async function generateStrip(
 export function downloadStrip(dataUrl: string, filename?: string): void {
   const link = document.createElement("a");
   link.href = dataUrl;
-  link.download = filename ?? `photobooth-${Date.now()}.png`;
+  link.download = filename ?? `${downloadPrefix}-${Date.now()}.png`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -214,7 +217,7 @@ export async function saveStrip(
   dataUrl: string,
   filename?: string,
 ): Promise<void> {
-  const name = filename ?? `photobooth-${Date.now()}.png`;
+  const name = filename ?? `${downloadPrefix}-${Date.now()}.png`;
 
   if (isMobileGalleryTarget()) {
     const file = await dataUrlToPngFile(dataUrl, name);

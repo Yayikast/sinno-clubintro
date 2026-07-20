@@ -10,7 +10,7 @@ import Image from "next/image";
 import Webcam from "react-webcam";
 import { SlotPhoto } from "@/components/ui/SlotPhoto";
 import { usePhotobooth } from "@/context/PhotoboothProvider";
-import { ADD_PHOTO_LAYOUT, getAddPhotoThumbnailSizes, getUploadPreviewSize } from "@/lib/addPhotoLayout";
+import { theme, getAddPhotoThumbnailSizes, getUploadPreviewSize } from "@/themes";
 import {
   cropPhotoToSlot,
 } from "@/lib/photoDisplay";
@@ -76,10 +76,11 @@ export function AddPhotoStep() {
   } = useCamera({ webcamRef, initialActive: false });
 
   const { contentWidth, contentHeight } = useViewportLayout({ hasFooter: true });
-  const captureWidth = Math.min(ADD_PHOTO_LAYOUT.viewfinder.width, contentWidth);
+  const addPhotoLayout = theme.layout.addPhoto;
+  const captureWidth = Math.min(addPhotoLayout.viewfinder.width, contentWidth);
   const captureHeight =
-    (captureWidth / ADD_PHOTO_LAYOUT.viewfinder.width) *
-    ADD_PHOTO_LAYOUT.viewfinder.height;
+    (captureWidth / addPhotoLayout.viewfinder.width) *
+    addPhotoLayout.viewfinder.height;
   const viewfinderDimensions = scaleBoxToFit(
     captureWidth,
     captureHeight,
@@ -93,8 +94,9 @@ export function AddPhotoStep() {
     true,
   );
   const uploadPreviewSize = getUploadPreviewSize(frame.aspectRatio);
-  const uploadLayout = ADD_PHOTO_LAYOUT.upload;
-  const takeSpacing = ADD_PHOTO_LAYOUT.takePhoto;
+  const uploadLayout = addPhotoLayout.upload;
+  const takeSpacing = addPhotoLayout.takePhoto;
+  const addPhotoCopy = theme.copy.addPhoto;
   const uploadWidthLimited = Math.min(uploadPreviewSize.width, contentWidth);
   const uploadHeightFromWidth =
     (uploadWidthLimited / uploadPreviewSize.width) * uploadPreviewSize.height;
@@ -147,7 +149,7 @@ export function AddPhotoStep() {
           const nextSlot = queue[queueIndex + 1];
           captureSlotIndexRef.current = nextSlot;
           setBatchCaptureMeta({ pos: queueIndex + 2, total: queue.length });
-          window.setTimeout(() => startCountdownRef.current(), 600);
+          window.setTimeout(() => startCountdownRef.current(), theme.motion.batchCaptureDelayMs);
           return;
         }
 
@@ -157,7 +159,7 @@ export function AddPhotoStep() {
         setActiveSlotIndex(null);
         setIsRetaking(false);
       })();
-    }, 150);
+    }, theme.motion.captureDelayMs);
   }, [
     capturePhoto,
     frame.aspectRatio,
@@ -293,21 +295,21 @@ export function AddPhotoStep() {
   const takeStatusHint =
     isCountingDown || isCapturing || captureSessionActive
       ? batchCaptureMeta && batchCaptureMeta.total > 1
-        ? `capturing photo ${batchCaptureMeta.pos} of ${batchCaptureMeta.total}...`
-        : "capturing the moments..."
+        ? addPhotoCopy.capturingPhotoOf(batchCaptureMeta.pos, batchCaptureMeta.total)
+        : addPhotoCopy.capturingMoments
       : allPhotosFilled
         ? (
             <>
-              select a photo to retake or
+              {addPhotoCopy.selectPhotoToRetake.split("\n")[0]}
               <br />
-              click next to choose your frame !
+              {addPhotoCopy.selectPhotoToRetake.split("\n")[1]}
             </>
           )
         : isRetaking
-          ? `retaking photo ${(activeSlotIndex ?? 0) + 1}...`
+          ? addPhotoCopy.retakingPhoto((activeSlotIndex ?? 0) + 1)
           : batchCaptureMeta
-            ? `photo ${batchCaptureMeta.pos} of ${batchCaptureMeta.total}`
-            : `${frame.photoCount} photos — tap capture to start`;
+            ? addPhotoCopy.photoOf(batchCaptureMeta.pos, batchCaptureMeta.total)
+            : addPhotoCopy.photosTapCapture(frame.photoCount);
 
   return (
     <PageShell
@@ -316,7 +318,9 @@ export function AddPhotoStep() {
       footer={
         allPhotosFilled ? (
           <ActionFooter hint={photoMode === "take" ? takeStatusHint : undefined}>
-            <PinkButton onClick={() => goToStep("customize")}>Next</PinkButton>
+            <PinkButton onClick={() => goToStep("customize")}>
+              {addPhotoCopy.nextButton}
+            </PinkButton>
           </ActionFooter>
         ) : photoMode === "take" ? (
           <ActionFooter hint={takeStatusHint}>
@@ -324,8 +328,8 @@ export function AddPhotoStep() {
               onClick={handleCaptureClick}
               disabled={isCapturing || isCountingDown || captureSessionActive}
             >
-              <Image src="/figma/icons/camera-black.svg" alt="" width={16} height={16} />
-              Capture
+              <Image src={theme.assets.cameraBlack} alt="" width={16} height={16} />
+              {addPhotoCopy.captureButton}
             </PinkButton>
           </ActionFooter>
         ) : null
@@ -341,7 +345,7 @@ export function AddPhotoStep() {
 
       <PageContent
         className={`w-full min-w-0 ${photoMode === "upload" || photoMode === "take" ? "min-h-0 flex-1" : ""}`}
-        style={{ marginTop: ADD_PHOTO_LAYOUT.headerToTabsGap }}
+        style={{ marginTop: addPhotoLayout.headerToTabsGap }}
       >
         <ModeTabs mode={photoMode} onChange={handleModeChange} />
 
@@ -367,7 +371,7 @@ export function AddPhotoStep() {
                 className="relative w-full overflow-hidden rounded-lg"
                 style={{
                   height: viewfinderDimensions.height,
-                  backgroundColor: ADD_PHOTO_LAYOUT.viewfinder.background,
+                  backgroundColor: addPhotoLayout.viewfinder.background,
                 }}
               >
                 {showCamera ? (
@@ -385,7 +389,9 @@ export function AddPhotoStep() {
                 ) : showCameraPlaceholder ? (
                   <div className="flex h-full w-full items-center justify-center">
                     <p className="font-mono text-sm text-white/60">
-                      {sessionStarted ? "Starting camera..." : "Tap Capture to Start"}
+                      {sessionStarted
+                        ? addPhotoCopy.cameraStarting
+                        : addPhotoCopy.cameraTapToStart}
                     </p>
                   </div>
                 ) : null}
@@ -401,7 +407,7 @@ export function AddPhotoStep() {
                       }}
                       width={120}
                     >
-                      Try again
+                      {addPhotoCopy.tryAgainButton}
                     </PinkButton>
                   </div>
                 ) : null}
@@ -422,9 +428,9 @@ export function AddPhotoStep() {
               <div
                 className="flex w-full min-w-0 items-center justify-center overflow-hidden"
                 style={{
-                  gap: ADD_PHOTO_LAYOUT.thumbnail.gap,
+                  gap: addPhotoLayout.thumbnail.gap,
                   maxWidth: viewfinderDimensions.width,
-                  maxHeight: ADD_PHOTO_LAYOUT.thumbnail.maxRowHeight,
+                  maxHeight: addPhotoLayout.thumbnail.maxRowHeight,
                 }}
               >
                 {photos.map((photo, index) => {
@@ -455,9 +461,12 @@ export function AddPhotoStep() {
                           photo &&
                           (hoverSlotIndex === index ||
                             (isRetaking && activeSlotIndex === index)) ? (
-                            <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-[#202020]/80">
+                            <div
+                              className="pointer-events-none absolute inset-0 flex items-center justify-center"
+                              style={{ backgroundColor: theme.colors.overlay }}
+                            >
                               <Image
-                                src="/figma/icons/camera-white.svg"
+                                src={theme.assets.cameraWhite}
                                 alt=""
                                 width={20}
                                 height={20}
@@ -494,7 +503,7 @@ export function AddPhotoStep() {
               className="font-mono text-center text-xs text-black"
               style={{ marginTop: uploadLayout.previewToHintGap }}
             >
-              add your photos !
+              {addPhotoCopy.uploadHint}
             </p>
           </div>
         )}

@@ -6,12 +6,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { usePhotobooth } from "@/context/PhotoboothProvider";
 import { saveStrip } from "@/lib/generateStrip";
 import {
+  theme,
   getPrintStripHeight,
   getPrintStripStartOffset,
   getPrintStripWidth,
   getPrinterTopInset,
-  PRINT_LAYOUT,
-} from "@/lib/printLayout";
+} from "@/themes";
 import { scaleBoxToFit } from "@/lib/responsiveLayout";
 import { useAvailableContentWidth } from "@/hooks/useAvailableContentWidth";
 import { useViewportLayout } from "@/hooks/useViewportLayout";
@@ -19,11 +19,13 @@ import { PageContent, PageShell, PinkButton } from "@/components/ui/PageShell";
 
 export function PrintStep() {
   const { finalStripUrl, frame, reset, goBack } = usePhotobooth();
+  const printLayout = theme.layout.print;
+  const printCopy = theme.copy.print;
   const [isPrinting, setIsPrinting] = useState(true);
   const availableContentWidth = useAvailableContentWidth();
   const { contentWidth, contentHeight } = useViewportLayout({ hasFooter: false });
   const previewWidth = getPrintStripWidth(
-    Math.min(PRINT_LAYOUT.contentWidth, contentWidth, availableContentWidth),
+    Math.min(printLayout.contentWidth, contentWidth, availableContentWidth),
   );
   const stripHeight = useMemo(
     () => getPrintStripHeight(previewWidth, frame.aspectRatio),
@@ -46,10 +48,10 @@ export function PrintStep() {
 
     const timer = window.setTimeout(() => {
       setIsPrinting(false);
-    }, PRINT_LAYOUT.printingDurationMs);
+    }, printLayout.printingDurationMs);
 
     return () => window.clearTimeout(timer);
-  }, [finalStripUrl]);
+  }, [finalStripUrl, printLayout.printingDurationMs]);
 
   const handleDownload = () => {
     if (!finalStripUrl) return;
@@ -60,26 +62,26 @@ export function PrintStep() {
     <PageShell showBack onBack={goBack} mainClassName="min-h-0">
       <PageContent
         className="flex min-h-0 w-full flex-1 flex-col"
-        style={{ marginTop: PRINT_LAYOUT.headerToTitleGap }}
+        style={{ marginTop: printLayout.headerToTitleGap }}
       >
         <h2
           className="shrink-0 text-center font-cursive font-normal text-black"
-          style={{ fontSize: PRINT_LAYOUT.titleSize }}
+          style={{ fontSize: printLayout.titleSize }}
         >
-          {isPrinting ? "Printing..." : "Your photostrip is ready !"}
+          {isPrinting ? printCopy.printing : printCopy.ready}
         </h2>
 
         <div
           className="mx-auto flex min-h-0 w-full flex-1 flex-col items-center"
-          style={{ marginTop: PRINT_LAYOUT.titleToContentGap }}
+          style={{ marginTop: printLayout.titleToContentGap }}
         >
           <div
             className="relative shrink-0"
             style={{
-              width: PRINT_LAYOUT.printerWidth,
+              width: printLayout.printerWidth,
               minHeight:
                 getPrinterTopInset() +
-                PRINT_LAYOUT.stripSlotTop +
+                printLayout.stripSlotTop +
                 stripDimensions.height,
               paddingTop: getPrinterTopInset(),
             }}
@@ -88,15 +90,15 @@ export function PrintStep() {
               <div
                 className="absolute left-0 w-full"
                 style={{
-                  top: PRINT_LAYOUT.printerBottomOffset,
-                  zIndex: PRINT_LAYOUT.zIndex.printerBottom,
+                  top: printLayout.printerBottomOffset,
+                  zIndex: printLayout.zIndex.printerBottom,
                 }}
               >
                 <Image
-                  src="/figma/assets/printer-bottom.svg"
+                  src={theme.assets.printerBottom}
                   alt=""
-                  width={PRINT_LAYOUT.printerWidth}
-                  height={PRINT_LAYOUT.printerBottomHeight}
+                  width={printLayout.printerWidth}
+                  height={printLayout.printerBottomHeight}
                   className="block h-auto w-full"
                   priority
                 />
@@ -106,10 +108,10 @@ export function PrintStep() {
                 <div
                   className="absolute left-1/2 -translate-x-1/2 overflow-hidden"
                   style={{
-                    top: PRINT_LAYOUT.stripSlotTop,
+                    top: printLayout.stripSlotTop,
                     width: stripDimensions.width,
                     height: stripDimensions.height,
-                    zIndex: PRINT_LAYOUT.zIndex.strip,
+                    zIndex: printLayout.zIndex.strip,
                   }}
                 >
                   <motion.div
@@ -117,7 +119,7 @@ export function PrintStep() {
                     initial={{ y: stripStartOffset }}
                     animate={{ y: 0 }}
                     transition={{
-                      duration: PRINT_LAYOUT.printingDurationMs / 1000,
+                      duration: printLayout.printingDurationMs / 1000,
                       ease: "linear",
                     }}
                     onAnimationComplete={() => setIsPrinting(false)}
@@ -125,7 +127,7 @@ export function PrintStep() {
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={finalStripUrl}
-                      alt="Your photostrip"
+                      alt={printCopy.stripAlt}
                       className="block max-w-full rounded-sm object-contain shadow-md"
                       style={{ width: stripDimensions.width }}
                     />
@@ -135,13 +137,13 @@ export function PrintStep() {
 
               <div
                 className="pointer-events-none absolute left-0 top-0 w-full"
-                style={{ zIndex: PRINT_LAYOUT.zIndex.printerTop }}
+                style={{ zIndex: printLayout.zIndex.printerTop }}
               >
                 <Image
-                  src="/figma/assets/printer-top.svg"
+                  src={theme.assets.printerTop}
                   alt=""
-                  width={PRINT_LAYOUT.printerWidth}
-                  height={PRINT_LAYOUT.printerTopHeight}
+                  width={printLayout.printerWidth}
+                  height={printLayout.printerTopHeight}
                   className="block h-auto w-full"
                   priority
                 />
@@ -158,12 +160,12 @@ export function PrintStep() {
               className="mt-auto flex shrink-0 justify-center gap-3 pt-6"
             >
               <PinkButton variant="secondary" onClick={reset}>
-                <Image src="/figma/icons/home.svg" alt="" width={16} height={16} />
-                Home
+                <Image src={theme.assets.home} alt="" width={16} height={16} />
+                {printCopy.homeButton}
               </PinkButton>
               <PinkButton onClick={handleDownload}>
-                <Image src="/figma/icons/download.svg" alt="" width={16} height={16} />
-                Download
+                <Image src={theme.assets.download} alt="" width={16} height={16} />
+                {printCopy.downloadButton}
               </PinkButton>
             </motion.div>
           ) : null}

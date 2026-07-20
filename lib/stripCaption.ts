@@ -1,3 +1,5 @@
+import { theme } from "@/themes/active";
+
 /** Caption font size as a share of strip / preview width (canvas + UI previews). */
 export const STRIP_CAPTION_FONT_SIZE_RATIO = 0.1;
 
@@ -31,7 +33,7 @@ export function scaleStripCaptionOffsetToExport(
   return Math.round(previewOffsetPx * (exportStripHeight / referencePreviewHeight));
 }
 
-export const STRIP_CAPTION_FONT_FAMILY = "Caveat, cursive";
+export const STRIP_CAPTION_FONT_FAMILY = theme.fonts.captionFamily;
 
 export function getStripCaptionPositionY(
   captionY: number,

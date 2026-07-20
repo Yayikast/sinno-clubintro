@@ -1,6 +1,6 @@
 "use client";
 
-import { CUSTOMIZE_LAYOUT, getSwatchBoxShadow } from "@/lib/customizeLayout";
+import { theme, getSwatchBoxShadow } from "@/themes";
 import { COLOR_PICKER_SWATCH_ID, getSwatchPreviewStyle } from "@/lib/frameFill";
 import { ColorWheelPicker, isPresetSwatchValue } from "@/components/ui/ColorWheelPicker";
 
@@ -19,14 +19,14 @@ export function ColorSwatchGrid({
   colors,
   selected,
   onSelect,
-  swatchSize = CUSTOMIZE_LAYOUT.swatchMinSize,
-  swatchGap = 8,
+  swatchSize = theme.layout.customize.swatchMinSize,
+  swatchGap = theme.layout.customize.swatchGap,
   showLabel = true,
 }: ColorSwatchGridProps) {
   return (
     <div
       className="flex w-fit max-w-full flex-col"
-      style={{ gap: CUSTOMIZE_LAYOUT.labelToSwatchesGap }}
+      style={{ gap: theme.layout.customize.labelToSwatchesGap }}
     >
       {showLabel ? <p className="font-mono text-xs text-black">{label}</p> : null}
       <div className="flex w-fit max-w-full flex-wrap" style={{ gap: swatchGap }}>

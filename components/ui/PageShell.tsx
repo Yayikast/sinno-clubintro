@@ -1,7 +1,6 @@
 "use client";
 
-import { ADD_PHOTO_LAYOUT } from "@/lib/addPhotoLayout";
-import { PAGE_LAYOUT } from "@/lib/pageLayout";
+import { theme, getSwatchBoxShadow } from "@/themes";
 import { getResponsivePaddingY } from "@/lib/responsiveLayout";
 import Image from "next/image";
 import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
@@ -29,9 +28,9 @@ export function PageShell({
   showBack = false,
   onBack,
   footer,
-  maxWidth = PAGE_LAYOUT.frameWidth,
-  paddingX = PAGE_LAYOUT.paddingX,
-  paddingY = PAGE_LAYOUT.paddingY,
+  maxWidth = theme.layout.page.frameWidth,
+  paddingX = theme.layout.page.paddingX,
+  paddingY = theme.layout.page.paddingY,
   titleClassName = "font-cursive text-[40px] font-normal leading-none text-black",
   subtitleClassName = "font-mono text-[12px] font-normal leading-normal text-black",
   mainClassName = "",
@@ -62,7 +61,7 @@ export function PageShell({
     <div className="relative mx-auto flex h-full w-full max-w-full flex-col overflow-hidden">
       <div className="pointer-events-none absolute inset-0 -z-10">
         <Image
-          src="/figma/decorations/background.png"
+          src={theme.assets.background}
           alt=""
           fill
           className="object-cover"
@@ -85,15 +84,15 @@ export function PageShell({
             <button
               type="button"
               onClick={onBack}
-              aria-label="Go back"
+              aria-label={theme.copy.shell.backAriaLabel}
               className="absolute left-0 top-0 flex h-10 w-10 items-center justify-center"
             >
-              <Image src="/figma/icons/back.svg" alt="" width={20} height={20} />
+              <Image src={theme.assets.backIcon} alt="" width={20} height={20} />
             </button>
           ) : null}
 
-          <h1 className={titleClassName}>PhotoBooth</h1>
-          <p className={subtitleClassName}>- capture the moments -</p>
+          <h1 className={titleClassName}>{theme.brand.name}</h1>
+          <p className={subtitleClassName}>{theme.brand.tagline}</p>
         </header>
 
         <main
@@ -107,7 +106,7 @@ export function PageShell({
             className={`mt-auto flex w-full min-w-0 shrink-0 flex-col items-center overflow-x-hidden ${footerClassName}`}
             style={{
               width: "100%",
-              maxWidth: PAGE_LAYOUT.contentWidth,
+              maxWidth: theme.layout.page.contentWidth,
               marginInline: "auto",
               ...footerStyle,
             }}
@@ -135,7 +134,7 @@ export function PageContent({
   return (
     <div
       className={`mx-auto box-border flex w-full min-w-0 max-w-full flex-col items-stretch overflow-hidden ${className}`}
-      style={{ maxWidth: PAGE_LAYOUT.contentWidth, ...style }}
+      style={{ maxWidth: theme.layout.page.contentWidth, ...style }}
     >
       {children}
     </div>
@@ -152,7 +151,7 @@ export function ActionFooter({ children, hint }: ActionFooterProps) {
   return (
     <div
       className="flex w-full flex-col items-center"
-      style={{ gap: hint ? PAGE_LAYOUT.actionFooter.hintToButtonGap : 0 }}
+      style={{ gap: hint ? theme.layout.page.actionFooter.hintToButtonGap : 0 }}
     >
       {hint ? (
         <div className="font-mono text-center text-xs text-black">{hint}</div>
@@ -180,15 +179,15 @@ export function PinkButton({
   disabled = false,
   variant = "primary",
   className = "",
-  textSize = PAGE_LAYOUT.primaryButton.textSize,
-  height = PAGE_LAYOUT.primaryButton.height,
-  width = PAGE_LAYOUT.primaryButton.width,
-  borderRadius = PAGE_LAYOUT.primaryButton.radius,
+  textSize = theme.layout.page.primaryButton.textSize,
+  height = theme.layout.page.primaryButton.height,
+  width = theme.layout.page.primaryButton.width,
+  borderRadius = theme.layout.page.primaryButton.radius,
 }: PinkButtonProps) {
-  const styles =
-    variant === "primary"
-      ? "bg-[#FFDEE6] hover:bg-[#ffcddd]"
-      : "bg-[#FFEDF1] hover:bg-[#ffe4ea]";
+  const buttonColors = theme.colors.button;
+  const bgColor = variant === "primary" ? buttonColors.primary : buttonColors.secondary;
+  const hoverColor =
+    variant === "primary" ? buttonColors.primaryHover : buttonColors.secondaryHover;
 
   return (
     <button
@@ -203,8 +202,17 @@ export function PinkButton({
         fontSize: textSize,
         borderRadius,
         boxSizing: "border-box",
+        backgroundColor: bgColor,
       }}
-      className={`font-cursive m-0 flex shrink-0 items-center justify-center gap-2 border-0 p-0 font-normal text-black transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${styles} ${className}`}
+      onMouseEnter={(event) => {
+        if (!disabled) {
+          event.currentTarget.style.backgroundColor = hoverColor;
+        }
+      }}
+      onMouseLeave={(event) => {
+        event.currentTarget.style.backgroundColor = bgColor;
+      }}
+      className={`font-cursive m-0 flex shrink-0 items-center justify-center gap-2 border-0 p-0 font-normal text-black transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${className}`}
     >
       {children}
     </button>
@@ -217,7 +225,8 @@ interface ModeTabsProps {
 }
 
 export function ModeTabs({ mode, onChange }: ModeTabsProps) {
-  const tabs = ADD_PHOTO_LAYOUT.modeTabs;
+  const tabs = theme.layout.addPhoto.modeTabs;
+  const tabColors = theme.colors.modeTabs;
   const pillInset = tabs.pillInset;
   const pillSpan = tabs.gap + pillInset * 2;
 
@@ -231,7 +240,7 @@ export function ModeTabs({ mode, onChange }: ModeTabsProps) {
         gap: tabs.gap,
         padding: pillInset,
         borderRadius: tabs.radius,
-        backgroundColor: tabs.trackBg,
+        backgroundColor: tabColors.trackBg,
       }}
     >
       <div
@@ -243,7 +252,7 @@ export function ModeTabs({ mode, onChange }: ModeTabsProps) {
           left: mode === "take" ? pillInset : `calc(50% + ${tabs.gap / 2}px)`,
           width: `calc((100% - ${pillSpan}px) / 2)`,
           borderRadius: tabs.radius - pillInset,
-          backgroundColor: tabs.pillBg,
+          backgroundColor: tabColors.pillBg,
         }}
       />
 
@@ -256,10 +265,10 @@ export function ModeTabs({ mode, onChange }: ModeTabsProps) {
           minHeight: tabs.height - pillInset * 2,
           maxHeight: tabs.height - pillInset * 2,
           fontSize: tabs.fontSize,
-          color: mode === "take" ? tabs.selectedTextColor : tabs.unselectedTextColor,
+          color: mode === "take" ? tabColors.selectedTextColor : tabColors.unselectedTextColor,
         }}
       >
-        Take Photos
+        {theme.copy.addPhoto.modeTake}
       </button>
       <button
         type="button"
@@ -270,10 +279,10 @@ export function ModeTabs({ mode, onChange }: ModeTabsProps) {
           minHeight: tabs.height - pillInset * 2,
           maxHeight: tabs.height - pillInset * 2,
           fontSize: tabs.fontSize,
-          color: mode === "upload" ? tabs.selectedTextColor : tabs.unselectedTextColor,
+          color: mode === "upload" ? tabColors.selectedTextColor : tabColors.unselectedTextColor,
         }}
       >
-        Upload
+        {theme.copy.addPhoto.modeUpload}
       </button>
     </div>
   );
@@ -286,12 +295,13 @@ interface CountdownPickerProps {
 
 export function CountdownPicker({ value, onChange }: CountdownPickerProps) {
   const options = [3, 5, 10] as const;
-  const countdown = ADD_PHOTO_LAYOUT.countdown;
+  const countdownLayout = theme.layout.addPhoto.countdown;
+  const countdownColors = theme.colors.countdown;
 
   return (
     <div className="flex flex-col items-center gap-2">
-      <p className="font-mono text-xs text-black">select countdown</p>
-      <div className="flex" style={{ gap: countdown.gap }}>
+      <p className="font-mono text-xs text-black">{theme.copy.addPhoto.countdownLabel}</p>
+      <div className="flex" style={{ gap: countdownLayout.gap }}>
         {options.map((seconds) => {
           const isSelected = value === seconds;
 
@@ -302,16 +312,18 @@ export function CountdownPicker({ value, onChange }: CountdownPickerProps) {
               onClick={() => onChange(seconds)}
               className="font-mono m-0 flex shrink-0 items-center justify-center rounded-full border-0 p-0 text-xs transition-colors"
               style={{
-                width: countdown.size,
-                height: countdown.size,
-                minWidth: countdown.size,
-                maxWidth: countdown.size,
-                minHeight: countdown.size,
-                maxHeight: countdown.size,
+                width: countdownLayout.size,
+                height: countdownLayout.size,
+                minWidth: countdownLayout.size,
+                maxWidth: countdownLayout.size,
+                minHeight: countdownLayout.size,
+                maxHeight: countdownLayout.size,
                 aspectRatio: "1 / 1",
                 boxSizing: "border-box",
-                backgroundColor: isSelected ? countdown.selectedBg : countdown.unselectedBg,
-                color: isSelected ? countdown.selectedColor : countdown.unselectedColor,
+                backgroundColor: isSelected
+                  ? countdownColors.selectedBg
+                  : countdownColors.unselectedBg,
+                color: isSelected ? countdownColors.selectedColor : countdownColors.unselectedColor,
               }}
             >
               {seconds}s
@@ -324,3 +336,4 @@ export function CountdownPicker({ value, onChange }: CountdownPickerProps) {
 }
 
 export { ColorSwatchGrid } from "@/components/ui/ColorSwatchGrid";
+export { getSwatchBoxShadow };

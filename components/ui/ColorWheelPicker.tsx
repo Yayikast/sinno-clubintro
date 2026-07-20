@@ -1,7 +1,6 @@
 "use client";
 
-import { getSwatchBoxShadow } from "@/lib/customizeLayout";
-import { COLOR_PICKER_PATH } from "@/lib/frameFill";
+import { theme, getSwatchBoxShadow } from "@/themes";
 
 function toColorInputValue(value: string): string {
   if (/^#[0-9A-Fa-f]{6}$/.test(value)) {
@@ -41,7 +40,7 @@ export function ColorWheelPicker({
         className="pointer-events-none absolute inset-0 rounded-full"
         style={{
           boxShadow: getSwatchBoxShadow(active),
-          backgroundImage: `url(${COLOR_PICKER_PATH})`,
+          backgroundImage: `url(${theme.assets.colorPicker})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}

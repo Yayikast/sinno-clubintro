@@ -1,6 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
+import { theme } from "@/themes";
 
 interface CameraFlashProps {
   show: boolean;
@@ -15,7 +16,7 @@ export function CameraFlash({ show }: CameraFlashProps) {
           initial={{ opacity: 0.9 }}
           animate={{ opacity: 0 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.15 }}
+          transition={{ duration: theme.motion.flashDurationMs / 1000 }}
         />
       ) : null}
     </AnimatePresence>

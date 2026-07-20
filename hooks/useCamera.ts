@@ -7,17 +7,19 @@ import {
   captureVideoFrame,
   VIDEO_CONSTRAINTS,
 } from "@/lib/cameraCapture";
+import { theme } from "@/themes";
 import type { CameraError } from "@/types/photobooth";
 
 export { VIDEO_CONSTRAINTS };
+
+const cameraCopy = theme.copy.camera;
 
 function mapMediaError(error: unknown): CameraError {
   if (typeof error === "string") {
     if (error.toLowerCase().includes("permission")) {
       return {
         type: "permission-denied",
-        message:
-          "Camera access was denied. Please allow camera permissions in your browser settings.",
+        message: cameraCopy.permissionDenied,
       };
     }
     return { type: "unknown", message: error };
@@ -29,37 +31,36 @@ function mapMediaError(error: unknown): CameraError {
       case "PermissionDeniedError":
         return {
           type: "permission-denied",
-          message:
-            "Camera access was denied. Please allow camera permissions in your browser settings.",
+          message: cameraCopy.permissionDenied,
         };
       case "NotFoundError":
       case "DevicesNotFoundError":
         return {
           type: "not-found",
-          message: "No camera was found on this device.",
+          message: cameraCopy.notFound,
         };
       case "NotReadableError":
       case "TrackStartError":
         return {
           type: "not-readable",
-          message: "Camera is already in use by another application.",
+          message: cameraCopy.notReadable,
         };
       case "OverconstrainedError":
         return {
           type: "not-supported",
-          message: "Your camera does not support the required settings.",
+          message: cameraCopy.notSupported,
         };
       default:
         return {
           type: "unknown",
-          message: error.message || "An unknown camera error occurred.",
+          message: error.message || cameraCopy.unknown,
         };
     }
   }
 
   return {
     type: "unknown",
-    message: "An unknown camera error occurred.",
+    message: cameraCopy.unknown,
   };
 }
 
@@ -94,7 +95,7 @@ export function useCamera({ webcamRef, initialActive = false }: UseCameraOptions
     if (!video) {
       setError({
         type: "capture-failed",
-        message: "Click Capture to try again.",
+        message: cameraCopy.captureFailed,
       });
       return null;
     }
@@ -103,7 +104,7 @@ export function useCamera({ webcamRef, initialActive = false }: UseCameraOptions
     if (!screenshot) {
       setError({
         type: "capture-failed",
-        message: "Click Capture to try again.",
+        message: cameraCopy.captureFailed,
       });
       return null;
     }

@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Image from "next/image";
 import { CoverImage } from "@/components/ui/SlotPhoto";
 import { useAvailableContentWidth } from "@/hooks/useAvailableContentWidth";
-import { getFrameSelectorLayout, LANDING_LAYOUT } from "@/lib/landingLayout";
+import { theme, getFrameSelectorLayout } from "@/themes";
 import {
   clampStripCaption,
   getFittedStripCaptionFontSize,
@@ -38,8 +38,8 @@ interface FramePreviewProps {
 export function FramePreview({
   frame,
   photos,
-  textColor = "#FFFFFF",
-  captionText = "moments of 2026",
+  textColor = theme.frames.defaults.textColor,
+  captionText = theme.frames.defaults.caption,
   className = "",
   width,
   height,
@@ -48,8 +48,8 @@ export function FramePreview({
   activeSlotIndex = null,
   hoverSlotIndex = null,
   showPlaceholders = false,
-  placeholderBg = "#202020",
-  overlayBg = "rgba(32, 32, 32, 0.8)",
+  placeholderBg = theme.colors.placeholder,
+  overlayBg = theme.colors.overlay,
 }: FramePreviewProps) {
   const slots = photos ?? Array.from({ length: frame.photoCount }, () => null);
   const [internalHoverIndex, setInternalHoverIndex] = useState<number | null>(null);
@@ -147,7 +147,7 @@ export function FramePreview({
                 style={{ backgroundColor: placeholderBg }}
               >
                 <Image
-                  src="/figma/icons/gallery.svg"
+                  src={theme.assets.gallery}
                   alt=""
                   width={galleryIconSize}
                   height={galleryIconSize}
@@ -155,7 +155,10 @@ export function FramePreview({
                 />
               </div>
             ) : (
-              <div className="h-full w-full bg-[#FFDEE6]" />
+              <div
+                className="h-full w-full"
+                style={{ backgroundColor: theme.colors.emptySlot }}
+              />
             )}
 
             {showGalleryOverlay ? (
@@ -164,7 +167,7 @@ export function FramePreview({
                 style={{ backgroundColor: overlayBg }}
               >
                 <Image
-                  src="/figma/icons/gallery.svg"
+                  src={theme.assets.gallery}
                   alt=""
                   width={galleryIconSize}
                   height={galleryIconSize}
@@ -221,8 +224,8 @@ export function FrameSelector({
   frames,
   itemHeight = 50,
   selectedSize = 66,
-  selectedBg = LANDING_LAYOUT.selectorSelectedBg,
-  unselectedOpacity = LANDING_LAYOUT.selectorUnselectedOpacity,
+  selectedBg = theme.layout.landing.selectorSelectedBg,
+  unselectedOpacity = theme.layout.landing.selectorUnselectedOpacity,
   selectedRadius = 4,
   gap = 8,
 }: FrameSelectorProps) {

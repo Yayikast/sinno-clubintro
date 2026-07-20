@@ -8,13 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import {
-  DEFAULT_CAPTION,
-  DEFAULT_FRAME_COLOR,
-  DEFAULT_FRAME_ID,
-  DEFAULT_TEXT_COLOR,
-  getFrameById,
-} from "@/lib/frames";
+import { theme } from "@/themes";
 import { clampStripCaption } from "@/lib/stripCaption";
 import {
   createEmptyPhotos,
@@ -24,6 +18,8 @@ import {
   type PhotoMode,
   type PhotoboothStep,
 } from "@/types/photobooth";
+
+const { defaults, getFrameById } = theme.frames;
 
 interface PhotoboothContextValue {
   step: PhotoboothStep;
@@ -60,17 +56,17 @@ const STEP_ORDER: PhotoboothStep[] = ["landing", "addPhoto", "customize", "print
 const PhotoboothContext = createContext<PhotoboothContextValue | null>(null);
 
 function buildInitialState() {
-  const frame = getFrameById(DEFAULT_FRAME_ID);
+  const frame = getFrameById(defaults.frameId);
   return {
     step: "landing" as PhotoboothStep,
-    selectedFrameId: DEFAULT_FRAME_ID,
+    selectedFrameId: defaults.frameId,
     frame,
     photos: createEmptyPhotos(frame.photoCount),
     photoMode: "take" as PhotoMode,
     countdownSeconds: 3 as CountdownSeconds,
-    frameColor: DEFAULT_FRAME_COLOR,
-    textColor: DEFAULT_TEXT_COLOR,
-    captionText: DEFAULT_CAPTION,
+    frameColor: defaults.frameColor,
+    textColor: defaults.textColor,
+    captionText: defaults.caption,
     finalStripUrl: null as string | null,
     activeSlotIndex: null as number | null,
     isRetaking: false,
@@ -79,16 +75,16 @@ function buildInitialState() {
 
 export function PhotoboothProvider({ children }: { children: ReactNode }) {
   const [step, setStep] = useState<PhotoboothStep>("landing");
-  const [selectedFrameId, setSelectedFrameId] = useState<FrameId>(DEFAULT_FRAME_ID);
-  const [frame, setFrame] = useState<FrameConfig>(getFrameById(DEFAULT_FRAME_ID));
+  const [selectedFrameId, setSelectedFrameId] = useState<FrameId>(defaults.frameId);
+  const [frame, setFrame] = useState<FrameConfig>(getFrameById(defaults.frameId));
   const [photos, setPhotosState] = useState<(string | null)[]>(
-    createEmptyPhotos(getFrameById(DEFAULT_FRAME_ID).photoCount),
+    createEmptyPhotos(getFrameById(defaults.frameId).photoCount),
   );
   const [photoMode, setPhotoModeState] = useState<PhotoMode>("take");
   const [countdownSeconds, setCountdownSecondsState] = useState<CountdownSeconds>(3);
-  const [frameColor, setFrameColorState] = useState(DEFAULT_FRAME_COLOR);
-  const [textColor, setTextColorState] = useState(DEFAULT_TEXT_COLOR);
-  const [captionText, setCaptionTextState] = useState(DEFAULT_CAPTION);
+  const [frameColor, setFrameColorState] = useState(defaults.frameColor);
+  const [textColor, setTextColorState] = useState(defaults.textColor);
+  const [captionText, setCaptionTextState] = useState(defaults.caption);
   const [finalStripUrl, setFinalStripUrlState] = useState<string | null>(null);
   const [activeSlotIndex, setActiveSlotIndexState] = useState<number | null>(null);
   const [isRetaking, setIsRetakingState] = useState(false);

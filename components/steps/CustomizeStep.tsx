@@ -3,15 +3,14 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { usePhotobooth } from "@/context/PhotoboothProvider";
-import { FRAME_COLOR_SWATCHES, TEXT_COLOR_SWATCHES } from "@/lib/frames";
 import {
-  CUSTOMIZE_LAYOUT,
-  getCustomizeColumnWidths,
-  getCustomizeControlsContentWidth,
+  theme,
   estimateCustomizeControlsHeight,
   getCustomizeAvailableRowHeight,
+  getCustomizeColumnWidths,
+  getCustomizeControlsContentWidth,
   getCustomizePreviewMaxHeight,
-} from "@/lib/customizeLayout";
+} from "@/themes";
 import { STRIP_CAPTION_MAX_LENGTH, STRIP_CUSTOMIZE_PRINT_CAPTION_EXTRA_OFFSET_PX } from "@/lib/stripCaption";
 import { generateStrip } from "@/lib/generateStrip";
 import { scaleBoxToFit } from "@/lib/responsiveLayout";
@@ -41,21 +40,25 @@ export function CustomizeStep() {
     goBack,
   } = usePhotobooth();
 
+  const customizeLayout = theme.layout.customize;
+  const customizeCopy = theme.copy.customize;
+  const { frameColorSwatches, textColorSwatches } = theme.frames;
+
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const debounceRef = useRef<number | null>(null);
   const availableContentWidth = useAvailableContentWidth();
   const { contentHeight: liveContentHeight } = useViewportLayout({ hasFooter: true });
   const layoutContentHeight = useStableContentHeight(liveContentHeight);
-  const contentWidth = Math.min(CUSTOMIZE_LAYOUT.contentWidth, availableContentWidth);
+  const contentWidth = Math.min(customizeLayout.contentWidth, availableContentWidth);
   const { previewWidth, controlsWidth } = getCustomizeColumnWidths(contentWidth);
   const { width: controlsContentWidth, swatchSize } = getCustomizeControlsContentWidth(
-    FRAME_COLOR_SWATCHES.length,
-    TEXT_COLOR_SWATCHES.length,
+    frameColorSwatches.length,
+    textColorSwatches.length,
     contentWidth,
   );
   const controlsHeight = estimateCustomizeControlsHeight(
-    FRAME_COLOR_SWATCHES.length,
-    TEXT_COLOR_SWATCHES.length,
+    frameColorSwatches.length,
+    textColorSwatches.length,
     controlsWidth,
     swatchSize,
   );
@@ -120,12 +123,12 @@ export function CustomizeStep() {
       onBack={goBack}
       mainClassName="min-h-0"
       mainScroll={mainScroll}
-      footerStyle={{ marginTop: CUSTOMIZE_LAYOUT.contentToFooterGap }}
+      footerStyle={{ marginTop: customizeLayout.contentToFooterGap }}
       footer={
         <ActionFooter>
           <PinkButton onClick={handlePrint}>
-            <Image src="/figma/icons/print.svg" alt="" width={16} height={16} />
-            Print
+            <Image src={theme.assets.print} alt="" width={16} height={16} />
+            {customizeCopy.printButton}
           </PinkButton>
         </ActionFooter>
       }
@@ -133,21 +136,21 @@ export function CustomizeStep() {
       <PageContent
         className="flex w-full shrink-0 flex-col overflow-visible"
         style={{
-          marginTop: CUSTOMIZE_LAYOUT.headerToTitleGap,
-          gap: CUSTOMIZE_LAYOUT.titleToContentGap,
+          marginTop: customizeLayout.headerToTitleGap,
+          gap: customizeLayout.titleToContentGap,
         }}
       >
         <h2
           className="shrink-0 font-cursive text-center font-normal text-black"
-          style={{ fontSize: CUSTOMIZE_LAYOUT.titleSize }}
+          style={{ fontSize: customizeLayout.titleSize }}
         >
-          Customize your frame &lt;3
+          {customizeCopy.title}
         </h2>
 
         <div
           className="customize-layout-row mx-auto flex w-fit max-w-full shrink-0 items-stretch"
           style={{
-            gap: CUSTOMIZE_LAYOUT.columnGap,
+            gap: customizeLayout.columnGap,
             maxWidth: contentWidth,
           }}
         >
@@ -162,7 +165,7 @@ export function CustomizeStep() {
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={previewUrl}
-                alt="Strip preview"
+                alt={customizeCopy.previewAlt}
                 className="block max-h-full max-w-full rounded-sm object-contain shadow-md"
                 style={{
                   width: previewDimensions.width,
@@ -183,33 +186,33 @@ export function CustomizeStep() {
           <div
             className="flex shrink-0 flex-col justify-center"
             style={{
-              gap: CUSTOMIZE_LAYOUT.sectionGap,
+              gap: customizeLayout.sectionGap,
               width: controlsContentWidth,
               height: rowHeight,
             }}
           >
             <ColorSwatchGrid
-              label="frame"
-              colors={FRAME_COLOR_SWATCHES}
+              label={customizeCopy.frameLabel}
+              colors={frameColorSwatches}
               selected={frameColor}
               onSelect={setFrameColor}
               swatchSize={swatchSize}
-              swatchGap={CUSTOMIZE_LAYOUT.swatchGap}
+              swatchGap={customizeLayout.swatchGap}
             />
 
             <div
               className="flex flex-col"
-              style={{ gap: CUSTOMIZE_LAYOUT.labelToSwatchesGap }}
+              style={{ gap: customizeLayout.labelToSwatchesGap }}
             >
-              <p className="shrink-0 font-mono text-xs text-black">text</p>
+              <p className="shrink-0 font-mono text-xs text-black">{customizeCopy.textLabel}</p>
               <ColorSwatchGrid
-                label="text"
+                label={customizeCopy.textLabel}
                 showLabel={false}
-                colors={TEXT_COLOR_SWATCHES}
+                colors={textColorSwatches}
                 selected={textColor}
                 onSelect={setTextColor}
                 swatchSize={swatchSize}
-                swatchGap={CUSTOMIZE_LAYOUT.swatchGap}
+                swatchGap={customizeLayout.swatchGap}
               />
               <input
                 type="text"
@@ -221,13 +224,13 @@ export function CustomizeStep() {
                   width: controlsContentWidth,
                   maxWidth: "100%",
                   boxSizing: "border-box",
-                  borderRadius: CUSTOMIZE_LAYOUT.inputRadius,
-                  border: `1px solid ${CUSTOMIZE_LAYOUT.inputBorder}`,
-                  paddingInline: CUSTOMIZE_LAYOUT.inputPaddingX,
-                  paddingBlock: CUSTOMIZE_LAYOUT.inputPaddingY,
-                  fontSize: CUSTOMIZE_LAYOUT.inputFontSize,
-                  minHeight: CUSTOMIZE_LAYOUT.inputMinHeight,
-                  height: CUSTOMIZE_LAYOUT.inputMinHeight,
+                  borderRadius: customizeLayout.inputRadius,
+                  border: `1px solid ${customizeLayout.inputBorder}`,
+                  paddingInline: customizeLayout.inputPaddingX,
+                  paddingBlock: customizeLayout.inputPaddingY,
+                  fontSize: customizeLayout.inputFontSize,
+                  minHeight: customizeLayout.inputMinHeight,
+                  height: customizeLayout.inputMinHeight,
                   lineHeight: 1,
                 }}
               />

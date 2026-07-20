@@ -1,18 +1,18 @@
 import type { Metadata, Viewport } from "next";
-import { fontCursive, fontMono } from "@/lib/fonts";
+import { theme, themeFonts } from "@/themes";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "PhotoBooth",
-  description: "Capture the moments — mobile photobooth web app",
+  title: theme.metadata.title,
+  description: theme.metadata.description,
   icons: {
-    icon: "/figma/logo/Logo.svg",
-    apple: "/figma/logo/Logo.svg",
+    icon: theme.metadata.favicon,
+    apple: theme.metadata.appleIcon,
   },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "PhotoBooth",
+    title: theme.metadata.appleWebAppTitle,
   },
 };
 
@@ -22,7 +22,7 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: "cover",
-  themeColor: "#FFF5F7",
+  themeColor: theme.brand.themeColor,
 };
 
 export default function RootLayout({
@@ -33,9 +33,15 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${fontCursive.variable} ${fontMono.variable} h-full antialiased`}
+      className={`${themeFonts.fontCursive.variable} ${themeFonts.fontMono.variable} h-full antialiased`}
+      style={
+        {
+          "--background": theme.colors.background,
+          "--foreground": theme.colors.foreground,
+        } as React.CSSProperties
+      }
     >
-      <body className="min-h-dvh overflow-x-hidden bg-[#FFF5F7] text-black">
+      <body className="min-h-dvh overflow-x-hidden bg-[var(--background)] text-[var(--foreground)]">
         {children}
       </body>
     </html>
