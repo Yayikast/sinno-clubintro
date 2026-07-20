@@ -1,4 +1,5 @@
 import type { PhotoSlot } from "@/types/photobooth";
+import { CAPTURE_JPEG_QUALITY } from "@/lib/cameraCapture";
 
 /**
  * Design system: captured/uploaded photos must NEVER be stretched or squeezed.
@@ -69,7 +70,7 @@ export async function cropPhotoToAspectRatio(
     canvas.height,
   );
 
-  return canvas.toDataURL("image/jpeg", 0.92);
+  return canvas.toDataURL("image/jpeg", CAPTURE_JPEG_QUALITY);
 }
 
 export async function cropPhotoToSlot(
