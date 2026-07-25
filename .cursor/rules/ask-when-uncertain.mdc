@@ -1,0 +1,14 @@
+---
+description: Ask the user when design or requirements are unclear instead of guessing
+alwaysApply: true
+---
+
+# Ask when confused or unsure
+
+When implementing features, layouts, or behavior:
+
+- If Figma specs, measurements, or expected UX are ambiguous, **ask the user** before guessing.
+- Prefer a short clarifying question over inventing spacing, copy, or interaction details.
+- When multiple valid interpretations exist (e.g. when to show a button, which width to use), state the options and ask which to follow.
+
+This project’s design is page-by-page from Figma; missing specs should be confirmed with the user.

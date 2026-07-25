@@ -1,4 +1,4 @@
-import { theme } from "@/themes/active";
+import { theme } from "@/themes";
 
 /** Caption font size as a share of strip / preview width (canvas + UI previews). */
 export const STRIP_CAPTION_FONT_SIZE_RATIO = 0.1;

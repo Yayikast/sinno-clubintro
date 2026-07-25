@@ -1,5 +1,5 @@
 import type { FrameConfig } from "@/types/photobooth";
-import { theme } from "@/themes/active";
+import { theme } from "@/themes";
 import {
   applyCanvasFill,
   getCaptionFillStyle,

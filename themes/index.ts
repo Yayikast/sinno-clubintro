@@ -1,35 +1,10 @@
-export { theme, activeThemeId } from "@/themes/active";
+export { sinnoTheme as theme } from "@/themes/sinno";
 export type { Theme, ThemeId } from "@/themes/types";
 
-import { activeThemeId } from "@/themes/active";
-import * as photoBoothLayout from "@/themes/photoBooth/layout";
-import * as sinnoLayout from "@/themes/sinno/layout";
-import { fonts as photoBoothFonts } from "@/themes/photoBooth/fonts";
-import { fonts as sinnoFonts } from "@/themes/sinno/fonts";
-import { getFrameById as getPhotoBoothFrameById } from "@/themes/photoBooth/frames";
-import { getFrameById as getSinnoFrameById } from "@/themes/sinno/frames";
+export { fonts as themeFonts } from "@/themes/sinno/fonts";
+export { getFrameById } from "@/themes/sinno/frames";
 
-const layoutByTheme = {
-  photoBooth: photoBoothLayout,
-  sinno: sinnoLayout,
-} as const;
-
-const fontsByTheme = {
-  photoBooth: photoBoothFonts,
-  sinno: sinnoFonts,
-} as const;
-
-const getFrameByIdByTheme = {
-  photoBooth: getPhotoBoothFrameById,
-  sinno: getSinnoFrameById,
-} as const;
-
-/** Font loaders for the active theme — import in server layout only. */
-export const themeFonts = fontsByTheme[activeThemeId];
-
-export const getFrameById = getFrameByIdByTheme[activeThemeId];
-
-export const {
+export {
   getAddPhotoThumbnailSizes,
   getCustomizeAvailableRowHeight,
   getCustomizeColumnWidths,
@@ -46,6 +21,6 @@ export const {
   getUploadPreviewSize,
   getSwatchGridWidth,
   estimateCustomizeControlsHeight,
-} = layoutByTheme[activeThemeId];
+} from "@/themes/sinno/layout";
 
-export type { AddPhotoThumbnailSize } from "@/themes/photoBooth/layout";
+export type { AddPhotoThumbnailSize } from "@/themes/sinno/layout";

@@ -1,6 +1,6 @@
 import type { ColorSwatch, FrameConfig, FrameId } from "@/types/photobooth";
 
-export type ThemeId = "photoBooth" | "sinno";
+export type ThemeId = "sinno";
 
 export interface ThemeBrand {
   name: string;

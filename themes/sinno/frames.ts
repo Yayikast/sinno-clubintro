@@ -1,7 +1,95 @@
 import { COLOR_PICKER_SWATCH_ID } from "@/lib/colorSwatch";
-import { frameList, getFrameById } from "@/themes/photoBooth/frames";
-import type { ColorSwatch } from "@/types/photobooth";
+import type { ColorSwatch, FrameConfig, FrameId } from "@/types/photobooth";
 import type { ThemeFrameDefaults, ThemeFrames } from "@/themes/types";
+
+const FRAMES: FrameConfig[] = [
+  {
+    id: "frame1",
+    label: "2 Photos",
+    photoCount: 2,
+    cols: 1,
+    rows: 2,
+    aspectRatio: 400 / 1200,
+    svgPath: "/sinno/frames/Frame1.svg",
+    iconPath: "/sinno/frames/Frame1.svg",
+    captionY: 0.945,
+    captionYOffset: 0,
+    slots: [
+      { x: 0.085, y: 0.0283, width: 0.83, height: 0.4308 },
+      { x: 0.085, y: 0.4875, width: 0.83, height: 0.4308 },
+    ],
+  },
+  {
+    id: "frame2",
+    label: "3 Photos",
+    photoCount: 3,
+    cols: 1,
+    rows: 3,
+    aspectRatio: 400 / 1200,
+    svgPath: "/sinno/frames/Frame2.svg",
+    iconPath: "/sinno/frames/Frame2.svg",
+    captionY: 0.945,
+    captionYOffset: 0,
+    slots: [
+      { x: 0.085, y: 0.0283, width: 0.83, height: 0.2767 },
+      { x: 0.085, y: 0.3333, width: 0.83, height: 0.2767 },
+      { x: 0.085, y: 0.6383, width: 0.83, height: 0.2767 },
+    ],
+  },
+  {
+    id: "frame3",
+    label: "4 Photos",
+    photoCount: 4,
+    cols: 1,
+    rows: 4,
+    aspectRatio: 400 / 1200,
+    svgPath: "/sinno/frames/Frame3.svg",
+    iconPath: "/sinno/frames/Frame3.svg",
+    captionY: 0.945,
+    captionYOffset: 0,
+    slots: [
+      { x: 0.085, y: 0.0283, width: 0.83, height: 0.2008 },
+      { x: 0.085, y: 0.2575, width: 0.83, height: 0.2008 },
+      { x: 0.085, y: 0.4867, width: 0.83, height: 0.2008 },
+      { x: 0.085, y: 0.7158, width: 0.83, height: 0.2008 },
+    ],
+  },
+  {
+    id: "frame4",
+    label: "1 + 2 Photos",
+    photoCount: 3,
+    cols: 2,
+    rows: 2,
+    aspectRatio: 762 / 1200,
+    svgPath: "/sinno/frames/Frame4.svg",
+    iconPath: "/sinno/frames/Frame4.svg",
+    captionY: 0.934,
+    captionFontSizeScale: 0.62,
+    slots: [
+      { x: 0.0446, y: 0.0283, width: 0.9107, height: 0.4308 },
+      { x: 0.0446, y: 0.4875, width: 0.433, height: 0.4308 },
+      { x: 0.5223, y: 0.4875, width: 0.433, height: 0.4308 },
+    ],
+  },
+  {
+    id: "frame5",
+    label: "2×2 Grid",
+    photoCount: 4,
+    cols: 2,
+    rows: 2,
+    aspectRatio: 762 / 1200,
+    svgPath: "/sinno/frames/Frame5.svg",
+    iconPath: "/sinno/frames/Frame5.svg",
+    captionY: 0.934,
+    captionFontSizeScale: 0.62,
+    slots: [
+      { x: 0.0446, y: 0.0283, width: 0.4331, height: 0.4292 },
+      { x: 0.5223, y: 0.0283, width: 0.4331, height: 0.4292 },
+      { x: 0.0446, y: 0.4858, width: 0.4331, height: 0.4292 },
+      { x: 0.5223, y: 0.4858, width: 0.4331, height: 0.4292 },
+    ],
+  },
+];
 
 export const defaults: ThemeFrameDefaults = {
   frameId: "frame3",
@@ -35,12 +123,20 @@ const TEXT_COLOR_SWATCHES: ColorSwatch[] = [
   { id: "purple-light", label: "Purple Light", value: "#EED6F7" },
 ];
 
+export const frameList = FRAMES;
+
+export function getFrameById(id: FrameId): FrameConfig {
+  const frame = FRAMES.find((item) => item.id === id);
+  if (!frame) {
+    return FRAMES[2];
+  }
+  return frame;
+}
+
 export const frames: ThemeFrames = {
-  list: frameList,
+  list: FRAMES,
   defaults,
   frameColorSwatches: FRAME_COLOR_SWATCHES,
   textColorSwatches: TEXT_COLOR_SWATCHES,
   getFrameById,
 };
-
-export { getFrameById };

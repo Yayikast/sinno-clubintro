@@ -1,4 +1,4 @@
-import { theme } from "@/themes/active";
+import { theme } from "@/themes";
 import { COLOR_PICKER_SWATCH_ID } from "@/lib/colorSwatch";
 
 export { COLOR_PICKER_SWATCH_ID };
