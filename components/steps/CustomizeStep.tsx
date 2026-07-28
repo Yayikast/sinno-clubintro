@@ -13,6 +13,7 @@ import {
 } from "@/themes";
 import { STRIP_CAPTION_MAX_LENGTH, STRIP_CUSTOMIZE_PRINT_CAPTION_EXTRA_OFFSET_PX } from "@/lib/stripCaption";
 import { generateStrip } from "@/lib/generateStrip";
+import { trackPhotobooth } from "@/lib/analytics";
 import { scaleBoxToFit } from "@/lib/responsiveLayout";
 import { useAvailableContentWidth } from "@/hooks/useAvailableContentWidth";
 import { useStableContentHeight } from "@/hooks/useStableContentHeight";
@@ -114,6 +115,7 @@ export function CustomizeStep() {
       STRIP_CUSTOMIZE_PRINT_CAPTION_EXTRA_OFFSET_PX,
     );
     setFinalStripUrl(url);
+    trackPhotobooth("photobooth_strip_printed", { frameId: frame.id });
     goToStep("print");
   };
 

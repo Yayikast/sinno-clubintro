@@ -11,6 +11,7 @@ import Webcam from "react-webcam";
 import { SlotPhoto } from "@/components/ui/SlotPhoto";
 import { usePhotobooth } from "@/context/PhotoboothProvider";
 import { theme, getAddPhotoThumbnailSizes, getUploadPreviewSize } from "@/themes";
+import { trackPhotobooth } from "@/lib/analytics";
 import {
   cropPhotoToSlot,
 } from "@/lib/photoDisplay";
@@ -318,7 +319,15 @@ export function AddPhotoStep() {
       footer={
         allPhotosFilled ? (
           <ActionFooter hint={photoMode === "take" ? takeStatusHint : undefined}>
-            <PinkButton onClick={() => goToStep("customize")}>
+            <PinkButton
+              onClick={() => {
+                trackPhotobooth("photobooth_photos_completed", {
+                  frameId: frame.id,
+                  mode: photoMode,
+                });
+                goToStep("customize");
+              }}
+            >
               {addPhotoCopy.nextButton}
             </PinkButton>
           </ActionFooter>
