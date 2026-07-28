@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import { theme } from "@/themes";
+import { trackPhotobooth } from "@/lib/analytics";
 import { clampStripCaption } from "@/lib/stripCaption";
 import {
   createEmptyPhotos,
@@ -102,8 +103,9 @@ export function PhotoboothProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const confirmFrameSelection = useCallback(() => {
+    trackPhotobooth("photobooth_started", { frameId: selectedFrameId });
     setStep("addPhoto");
-  }, []);
+  }, [selectedFrameId]);
 
   const setPhotoMode = useCallback((mode: PhotoMode) => {
     setPhotoModeState(mode);
