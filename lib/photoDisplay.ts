@@ -83,3 +83,50 @@ export async function cropPhotoToSlot(
     getSlotAspectRatio(slot, frameAspectRatio),
   );
 }
+
+const HEIC_EXTENSION_PATTERN = /\.(heic|heif)$/i;
+
+/** True for HEIC/HEIF files — no mainstream browser can decode these via <img>/canvas. */
+export function isHeicFile(file: File): boolean {
+  const type = file.type.toLowerCase();
+  return (
+    type === "image/heic" ||
+    type === "image/heif" ||
+    HEIC_EXTENSION_PATTERN.test(file.name)
+  );
+}
+
+function readFileAsDataUrl(file: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        resolve(reader.result);
+      } else {
+        reject(new Error("Failed to read file"));
+      }
+    };
+    reader.onerror = () => reject(reader.error ?? new Error("Failed to read file"));
+    reader.readAsDataURL(file);
+  });
+}
+
+/** Converts a HEIC/HEIF file to a JPEG data URL. Lazy-loads the ~2MB wasm decoder on first use. */
+async function convertHeicToDataUrl(file: File): Promise<string> {
+  const heic2any = (await import("heic2any")).default;
+  const result = await heic2any({ blob: file, toType: "image/jpeg", quality: 0.92 });
+  const jpegBlob = Array.isArray(result) ? result[0] : result;
+  return readFileAsDataUrl(jpegBlob);
+}
+
+/**
+ * Reads any uploaded image file as a data URL, converting HEIC/HEIF to JPEG
+ * first since browsers can't decode HEIC via the Image/Canvas APIs used by
+ * cropPhotoToSlot.
+ */
+export async function fileToPhotoDataUrl(file: File): Promise<string> {
+  if (isHeicFile(file)) {
+    return convertHeicToDataUrl(file);
+  }
+  return readFileAsDataUrl(file);
+}

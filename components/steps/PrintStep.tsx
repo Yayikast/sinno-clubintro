@@ -23,6 +23,7 @@ export function PrintStep() {
   const printLayout = theme.layout.print;
   const printCopy = theme.copy.print;
   const [isPrinting, setIsPrinting] = useState(true);
+  const [saveError, setSaveError] = useState(false);
   const availableContentWidth = useAvailableContentWidth();
   const { contentWidth, contentHeight } = useViewportLayout({ hasFooter: false });
   const previewWidth = getPrintStripWidth(
@@ -57,7 +58,10 @@ export function PrintStep() {
   const handleDownload = () => {
     if (!finalStripUrl) return;
     trackPhotobooth("photobooth_strip_downloaded", { frameId: frame.id });
-    void saveStrip(finalStripUrl);
+    setSaveError(false);
+    saveStrip(finalStripUrl).catch(() => {
+      setSaveError(true);
+    });
   };
 
   return (
@@ -159,16 +163,23 @@ export function PrintStep() {
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mt-auto flex shrink-0 justify-center gap-3 pt-6"
+              className="mt-auto flex shrink-0 flex-col items-center gap-3 pt-6"
             >
-              <PinkButton variant="secondary" onClick={reset}>
-                <Image src={theme.assets.home} alt="" width={16} height={16} />
-                {printCopy.homeButton}
-              </PinkButton>
-              <PinkButton onClick={handleDownload}>
-                <Image src={theme.assets.download} alt="" width={16} height={16} />
-                {printCopy.downloadButton}
-              </PinkButton>
+              {saveError ? (
+                <p className="font-mono text-center text-xs" style={{ color: "#B00020" }}>
+                  {printCopy.saveFailed}
+                </p>
+              ) : null}
+              <div className="flex justify-center gap-3">
+                <PinkButton variant="secondary" onClick={reset}>
+                  <Image src={theme.assets.home} alt="" width={16} height={16} />
+                  {printCopy.homeButton}
+                </PinkButton>
+                <PinkButton onClick={handleDownload}>
+                  <Image src={theme.assets.download} alt="" width={16} height={16} />
+                  {printCopy.downloadButton}
+                </PinkButton>
+              </div>
             </motion.div>
           ) : null}
         </AnimatePresence>

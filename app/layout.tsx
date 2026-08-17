@@ -42,7 +42,10 @@ export default function RootLayout({
         } as React.CSSProperties
       }
     >
-      <body className="min-h-dvh overflow-x-hidden bg-[var(--background)] text-[var(--foreground)]">
+      <body
+        className="min-h-dvh overflow-x-hidden bg-[var(--background)] text-[var(--foreground)]"
+        suppressHydrationWarning
+      >
         {children}
         <Analytics />
       </body>

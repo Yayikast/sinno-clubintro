@@ -82,6 +82,8 @@ export interface ThemeAssets {
   backIcon: string;
   cameraBlack: string;
   cameraWhite: string;
+  cameraFlipBlack: string;
+  cameraFlipWhite: string;
   gallery: string;
   home: string;
   download: string;
@@ -107,12 +109,15 @@ export interface ThemeAddPhotoCopy {
   cameraStarting: string;
   cameraTapToStart: string;
   uploadHint: string;
+  uploadFailed: string;
+  convertingPhoto: string;
   capturingMoments: string;
   capturingPhotoOf: (pos: number, total: number) => string;
   selectPhotoToRetake: string;
   retakingPhoto: (index: number) => string;
   photoOf: (pos: number, total: number) => string;
   photosTapCapture: (count: number) => string;
+  flipCameraAriaLabel: string;
 }
 
 export interface ThemeCustomizeCopy {
@@ -129,6 +134,7 @@ export interface ThemePrintCopy {
   stripAlt: string;
   homeButton: string;
   downloadButton: string;
+  saveFailed: string;
 }
 
 export interface ThemeShellCopy {
@@ -144,6 +150,12 @@ export interface ThemeCameraCopy {
   captureFailed: string;
 }
 
+export interface ThemeErrorCopy {
+  title: string;
+  message: string;
+  retryButton: string;
+}
+
 export interface ThemeCopy {
   shell: ThemeShellCopy;
   landing: ThemeLandingCopy;
@@ -151,6 +163,7 @@ export interface ThemeCopy {
   customize: ThemeCustomizeCopy;
   print: ThemePrintCopy;
   camera: ThemeCameraCopy;
+  error: ThemeErrorCopy;
 }
 
 export interface ThemeFrameDefaults {
