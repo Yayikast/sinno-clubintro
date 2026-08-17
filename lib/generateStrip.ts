@@ -3,9 +3,12 @@ import { theme } from "@/themes";
 import {
   applyCanvasFill,
   getCaptionFillStyle,
+  getOverlayPath,
   isGradientFill,
+  isOverlayFill,
   isPatternFill,
 } from "@/lib/frameFill";
+import { loadCachedImage } from "@/lib/imageCache";
 import {
   clampStripCaption,
   getFittedStripCaptionFontSize,
@@ -64,28 +67,63 @@ function drawCoverImage(
   );
 }
 
-async function loadFrameSvg(frameColor: string, svgPath: string): Promise<HTMLImageElement> {
-  const response = await fetch(svgPath);
-  const svgText = await response.text();
-  const coloredSvg = svgText.replace(/fill="black"/g, `fill="${frameColor}"`);
-  const blob = new Blob([coloredSvg], { type: "image/svg+xml" });
-  const url = URL.createObjectURL(blob);
+const svgTextCache = new Map<string, Promise<string>>();
 
-  try {
-    return await loadImage(url);
-  } finally {
-    URL.revokeObjectURL(url);
-  }
+function loadSvgText(svgPath: string): Promise<string> {
+  const cached = svgTextCache.get(svgPath);
+  if (cached) return cached;
+
+  const promise = fetch(svgPath).then((response) => response.text());
+  svgTextCache.set(svgPath, promise);
+  return promise;
+}
+
+const coloredFrameSvgCache = new Map<string, Promise<HTMLImageElement>>();
+
+/** Recolored frame SVG rasterized to an image, memoized per (svgPath, color). */
+function loadFrameSvg(frameColor: string, svgPath: string): Promise<HTMLImageElement> {
+  const cacheKey = `${svgPath}::${frameColor}`;
+  const cached = coloredFrameSvgCache.get(cacheKey);
+  if (cached) return cached;
+
+  const promise = (async () => {
+    const svgText = await loadSvgText(svgPath);
+    const coloredSvg = svgText.replace(/fill="black"/g, `fill="${frameColor}"`);
+    const blob = new Blob([coloredSvg], { type: "image/svg+xml" });
+    const url = URL.createObjectURL(blob);
+
+    try {
+      return await loadImage(url);
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  })();
+
+  coloredFrameSvgCache.set(cacheKey, promise);
+  return promise;
+}
+
+/** Prewarm the SVG text + black mask for a frame so the first Customize render is instant. */
+export function preloadFrameOverlay(svgPath: string): void {
+  loadFrameSvg("#000000", svgPath).catch(() => {});
 }
 
 async function drawFrameOverlay(
   ctx: CanvasRenderingContext2D,
   frameColor: string,
-  svgPath: string,
+  frame: FrameConfig,
   width: number,
   height: number,
 ): Promise<void> {
-  const mask = await loadFrameSvg("#000000", svgPath);
+  if (isOverlayFill(frameColor)) {
+    const overlayPath = getOverlayPath(frameColor, frame.id);
+    if (!overlayPath) return;
+    const art = await loadCachedImage(overlayPath);
+    ctx.drawImage(art, 0, 0, width, height);
+    return;
+  }
+
+  const svgPath = frame.svgPath;
 
   if (
     !isPatternFill(frameColor) &&
@@ -96,6 +134,8 @@ async function drawFrameOverlay(
     ctx.drawImage(colored, 0, 0, width, height);
     return;
   }
+
+  const mask = await loadFrameSvg("#000000", svgPath);
 
   const overlay = document.createElement("canvas");
   overlay.width = width;
@@ -151,7 +191,7 @@ export async function generateStrip(
     ctx.restore();
   });
 
-  await drawFrameOverlay(ctx, frameColor, frame.svgPath, stripWidth, stripHeight);
+  await drawFrameOverlay(ctx, frameColor, frame, stripWidth, stripHeight);
 
   if (captionText.trim()) {
     const caption = clampStripCaption(captionText).trim();

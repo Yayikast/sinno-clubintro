@@ -104,23 +104,24 @@ const FRAME_COLOR_SWATCHES: ColorSwatch[] = [
   { id: "gray", label: "Gray", value: "#CACACA" },
   { id: "white", label: "White", value: "#FFFFFF" },
   { id: "purple-dark", label: "Purple Dark", value: "#D4A0E7" },
-  { id: "purple-light", label: "Purple Light", value: "#EED6F7" },
-  { id: "purple-light-2", label: "Purple Light 2", value: "#F8E6FF" },
-  { id: "purple-bg", label: "Purple Bg", value: "#F9EBFF" },
   { id: "pattern1", label: "Pattern 1", value: "pattern:frame1.webp" },
   { id: "pattern2", label: "Pattern 2", value: "pattern:frame2.jpeg" },
   { id: "pattern3", label: "Pattern 3", value: "pattern:frame3.webp" },
   { id: "pattern4", label: "Pattern 4", value: "pattern:frame4.webp" },
   { id: "pattern5", label: "Pattern 5", value: "pattern:frame5.png" },
+  { id: "overlay-frame6", label: "Overlay 1", value: "overlay:frame6" },
+  { id: "overlay-frame7", label: "Overlay 2", value: "overlay:frame7" },
 ];
 
 const TEXT_COLOR_SWATCHES: ColorSwatch[] = [
   { id: "picker", label: "Color picker", value: COLOR_PICKER_SWATCH_ID },
   { id: "black", label: "Black", value: "#000000" },
-  { id: "gray", label: "Gray", value: "#CACACA" },
+  { id: "gray", label: "Gray", value: "#888888" },
   { id: "white", label: "White", value: "#FFFFFF" },
-  { id: "purple-dark", label: "Purple Dark", value: "#D4A0E7" },
-  { id: "purple-light", label: "Purple Light", value: "#EED6F7" },
+  { id: "purple", label: "Purple", value: "#D1A2E3" },
+  { id: "red", label: "Red", value: "#960C0C" },
+  { id: "green", label: "Green", value: "#076422" },
+  { id: "blue", label: "Blue", value: "#054D87" },
 ];
 
 export const frameList = FRAMES;

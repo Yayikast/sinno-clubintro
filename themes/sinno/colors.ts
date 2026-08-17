@@ -17,13 +17,13 @@ export const colors: ThemeColors = {
     trackBg: "#F8E6FF",
     pillBg: "#FFFFFF",
     selectedTextColor: "#000000",
-    unselectedTextColor: "#CACACA",
+    unselectedTextColor: "#464646",
   },
   countdown: {
     selectedBg: "#FFFFFF",
     unselectedBg: "#F8E6FF",
     selectedColor: "#000000",
-    unselectedColor: "#CACACA",
+    unselectedColor: "#464646",
   },
   landing: {
     selectorSelectedBg: "rgba(255, 255, 255, 0.35)",

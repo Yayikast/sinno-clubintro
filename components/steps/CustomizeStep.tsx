@@ -6,13 +6,13 @@ import { usePhotobooth } from "@/context/PhotoboothProvider";
 import {
   theme,
   estimateCustomizeControlsHeight,
-  getCustomizeAvailableRowHeight,
   getCustomizeColumnWidths,
   getCustomizeControlsContentWidth,
   getCustomizePreviewMaxHeight,
 } from "@/themes";
 import { STRIP_CAPTION_MAX_LENGTH, STRIP_CUSTOMIZE_PRINT_CAPTION_EXTRA_OFFSET_PX } from "@/lib/stripCaption";
-import { generateStrip } from "@/lib/generateStrip";
+import { generateStrip, preloadFrameOverlay } from "@/lib/generateStrip";
+import { preloadFillSwatches } from "@/lib/frameFill";
 import { trackPhotobooth } from "@/lib/analytics";
 import { scaleBoxToFit } from "@/lib/responsiveLayout";
 import { useAvailableContentWidth } from "@/hooks/useAvailableContentWidth";
@@ -64,7 +64,6 @@ export function CustomizeStep() {
     swatchSize,
   );
   const previewMaxHeight = getCustomizePreviewMaxHeight(layoutContentHeight, controlsHeight);
-  const availableRowHeight = getCustomizeAvailableRowHeight(layoutContentHeight);
   const previewDimensions = scaleBoxToFit(
     previewWidth,
     previewWidth / frame.aspectRatio,
@@ -72,9 +71,17 @@ export function CustomizeStep() {
     previewMaxHeight,
   );
   const rowHeight = Math.max(previewDimensions.height, controlsHeight);
-  const liveAvailableRowHeight = getCustomizeAvailableRowHeight(liveContentHeight);
-  const mainScroll =
-    rowHeight > availableRowHeight + 0.5 || rowHeight > liveAvailableRowHeight + 0.5;
+
+  useEffect(() => {
+    preloadFrameOverlay(frame.svgPath);
+    preloadFillSwatches(
+      [
+        ...frameColorSwatches.map((swatch) => swatch.value),
+        ...textColorSwatches.map((swatch) => swatch.value),
+      ],
+      frame.id,
+    );
+  }, [frame.id, frame.svgPath, frameColorSwatches, textColorSwatches]);
 
   useEffect(() => {
     const filledPhotos = photos.filter((photo): photo is string => photo !== null);
@@ -124,7 +131,6 @@ export function CustomizeStep() {
       showBack
       onBack={goBack}
       mainClassName="min-h-0"
-      mainScroll={mainScroll}
       footerStyle={{ marginTop: customizeLayout.contentToFooterGap }}
       footer={
         <ActionFooter>

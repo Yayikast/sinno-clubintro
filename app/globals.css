@@ -85,3 +85,21 @@ input.color-picker-input {
     flex: 0 1 auto;
   }
 }
+
+.orientation-lock {
+  display: none;
+}
+
+/* Portrait-only app: on touch devices rotated to landscape, hide the app
+   and show a rotate-device prompt instead of letting the portrait-fixed
+   layout overflow/break. Desktop browsers (mouse pointer) are unaffected
+   even if their window is wider than it is tall. */
+@media (orientation: landscape) and (hover: none) and (pointer: coarse) {
+  .app-shell {
+    display: none;
+  }
+
+  .orientation-lock {
+    display: flex;
+  }
+}

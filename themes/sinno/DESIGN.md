@@ -21,7 +21,7 @@ Configured in [`fonts.ts`](./fonts.ts) and [`fontTokens.ts`](./fontTokens.ts).
 | Token | Hex | Usage |
 |-------|-----|--------|
 | Black | `#000000` | Primary text |
-| Gray | `#CACACA` | Disabled / muted UI (e.g. unselected tab labels) |
+| Gray | `#464646` | Disabled / muted UI (e.g. unselected tab labels) |
 | White | `#FFFFFF` | Tab pill, countdown selected bg, caption on dark frames |
 | Overlay | `#202020` @ 80% opacity (`rgba(32, 32, 32, 0.8)`) | Camera hover overlay, upload slot overlay |
 

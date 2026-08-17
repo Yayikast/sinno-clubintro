@@ -1,5 +1,7 @@
 import { theme } from "@/themes";
 import { COLOR_PICKER_SWATCH_ID } from "@/lib/colorSwatch";
+import { loadCachedImage } from "@/lib/imageCache";
+import type { FrameId } from "@/types/photobooth";
 
 export { COLOR_PICKER_SWATCH_ID };
 
@@ -32,6 +34,70 @@ export function getPatternPath(value: string): string | null {
   return `${theme.assets.patternsBase}/${id}.png`;
 }
 
+/**
+ * "Overlay" fills are full-illustration frame overlays (a decorative design
+ * drawn on top of the photos) rather than a background fill/color, with a
+ * separate art file per frame layout — e.g. "overlay:frame6" resolves to
+ * `/sinno/patterns/frame6/{1..5}.svg` depending on the selected FrameId.
+ */
+export function isOverlayFill(value: string): boolean {
+  return value.startsWith("overlay:");
+}
+
+const FRAME_INDEX: Record<FrameId, number> = {
+  frame1: 1,
+  frame2: 2,
+  frame3: 3,
+  frame4: 4,
+  frame5: 5,
+};
+
+export function getOverlayPath(value: string, frameId: FrameId): string | null {
+  if (!isOverlayFill(value)) return null;
+  const group = value.slice("overlay:".length);
+  const index = FRAME_INDEX[frameId];
+  if (!group || !index) return null;
+  return `${theme.assets.patternsBase}/${group}/${index}.png`;
+}
+
+/** Small dedicated preview thumbnail for an overlay swatch (independent of frame layout). */
+export function getOverlayCoverPath(value: string): string | null {
+  if (!isOverlayFill(value)) return null;
+  const group = value.slice("overlay:".length);
+  if (!group) return null;
+  return `${theme.assets.patternsBase}/${group}/cover.png`;
+}
+
+/** Neutral backdrop painted behind photos when an overlay fill is selected. */
+export const OVERLAY_FILL_BACKDROP = "#FFFFFF";
+
+/** Prewarm the canvas image cache for a set of swatch values (pattern/gradient/overlay fills). */
+export function preloadFillSwatches(values: string[], frameId?: FrameId): void {
+  for (const value of values) {
+    if (isGradientFill(value) || isPickerSwatch(value)) {
+      loadCachedImage(COLOR_PICKER_PATH).catch(() => {});
+      continue;
+    }
+
+    if (isOverlayFill(value)) {
+      const coverPath = getOverlayCoverPath(value);
+      if (coverPath) {
+        loadCachedImage(coverPath).catch(() => {});
+      }
+      const overlayPath = frameId ? getOverlayPath(value, frameId) : null;
+      if (overlayPath) {
+        loadCachedImage(overlayPath).catch(() => {});
+      }
+      continue;
+    }
+
+    const path = getPatternPath(value);
+    if (path) {
+      loadCachedImage(path).catch(() => {});
+    }
+  }
+}
+
 export function getSwatchPreviewStyle(value: string): {
   backgroundColor?: string;
   backgroundImage?: string;
@@ -57,16 +123,19 @@ export function getSwatchPreviewStyle(value: string): {
       : { backgroundColor: "#CCCCCC" };
   }
 
-  return { backgroundColor: value };
-}
+  if (isOverlayFill(value)) {
+    const path = getOverlayCoverPath(value);
+    return path
+      ? {
+          backgroundColor: OVERLAY_FILL_BACKDROP,
+          backgroundImage: `url(${path})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }
+      : { backgroundColor: "#CCCCCC" };
+  }
 
-function loadImage(src: string): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const image = new Image();
-    image.onload = () => resolve(image);
-    image.onerror = () => reject(new Error(`Failed to load image: ${src}`));
-    image.src = src;
-  });
+  return { backgroundColor: value };
 }
 
 function drawCoverImage(
@@ -89,8 +158,14 @@ export async function applyCanvasFill(
   width: number,
   height: number,
 ): Promise<void> {
+  if (isOverlayFill(value)) {
+    ctx.fillStyle = OVERLAY_FILL_BACKDROP;
+    ctx.fillRect(0, 0, width, height);
+    return;
+  }
+
   if (isGradientFill(value)) {
-    const image = await loadImage(COLOR_PICKER_PATH);
+    const image = await loadCachedImage(COLOR_PICKER_PATH);
     drawCoverImage(ctx, image, width, height);
     return;
   }
@@ -103,7 +178,7 @@ export async function applyCanvasFill(
       return;
     }
 
-    const image = await loadImage(path);
+    const image = await loadCachedImage(path);
     if (path.endsWith(".png") || path.endsWith(".jpg") || path.endsWith(".webp")) {
       drawCoverImage(ctx, image, width, height);
       return;
