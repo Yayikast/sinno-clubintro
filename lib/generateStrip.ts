@@ -221,13 +221,32 @@ export async function generateStrip(
   return canvas.toDataURL("image/png");
 }
 
-export function downloadStrip(dataUrl: string, filename?: string): void {
+async function dataUrlToBlob(dataUrl: string): Promise<Blob> {
+  const response = await fetch(dataUrl);
+  return response.blob();
+}
+
+/**
+ * Downloads via a short-lived Blob URL rather than putting the (potentially
+ * multi-MB, since the export is a lossless PNG) data: URI directly in the
+ * anchor href — large data: URIs are known to silently fail to navigate on
+ * some mobile browsers, whereas Blob URLs are a short opaque reference.
+ */
+export async function downloadStrip(dataUrl: string, filename?: string): Promise<void> {
+  const name = filename ?? `${downloadPrefix}-${Date.now()}.png`;
+  const blob = await dataUrlToBlob(dataUrl);
+  const objectUrl = URL.createObjectURL(blob);
+
   const link = document.createElement("a");
-  link.href = dataUrl;
-  link.download = filename ?? `${downloadPrefix}-${Date.now()}.png`;
+  link.href = objectUrl;
+  link.download = name;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+
+  // Revoke after a delay rather than immediately — some mobile browsers
+  // pick up the blob asynchronously after the click.
+  window.setTimeout(() => URL.revokeObjectURL(objectUrl), 4000);
 }
 
 function isMobileGalleryTarget(): boolean {
@@ -239,8 +258,7 @@ async function dataUrlToPngFile(
   dataUrl: string,
   filename: string,
 ): Promise<File> {
-  const response = await fetch(dataUrl);
-  const blob = await response.blob();
+  const blob = await dataUrlToBlob(dataUrl);
   return new File([blob], filename, { type: "image/png" });
 }
 
@@ -251,7 +269,16 @@ function canSharePngFile(file: File): boolean {
 
 /**
  * Save strip to Photos/Gallery on mobile via the system share sheet
- * (choose "Save Image" / "Save to Photos"). Falls back to file download on desktop.
+ * (choose "Save Image" / "Save to Photos"). Falls back to file download on
+ * desktop, and on any failure in the share path — unsupported, permission
+ * denied, the data: URI → File conversion failing, etc. — except the user
+ * cancelling the share sheet themselves, which should not trigger a fallback.
+ *
+ * The mobile branch used to await the file conversion outside any try/catch:
+ * if it threw (a real risk given the multi-MB PNG export), saveStrip's
+ * promise rejected with no fallback, and since callers invoke this as
+ * `void saveStrip(...)`, the failure was a silent unhandled rejection — the
+ * Save button did nothing, with no error and no download.
  */
 export async function saveStrip(
   dataUrl: string,
@@ -260,19 +287,19 @@ export async function saveStrip(
   const name = filename ?? `${downloadPrefix}-${Date.now()}.png`;
 
   if (isMobileGalleryTarget()) {
-    const file = await dataUrlToPngFile(dataUrl, name);
-
-    if (canSharePngFile(file)) {
-      try {
+    try {
+      const file = await dataUrlToPngFile(dataUrl, name);
+      if (canSharePngFile(file)) {
         await navigator.share({ files: [file] });
         return;
-      } catch (error) {
-        if (error instanceof DOMException && error.name === "AbortError") {
-          return;
-        }
       }
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        return;
+      }
+      // Any other failure falls through to the direct-download fallback.
     }
   }
 
-  downloadStrip(dataUrl, name);
+  await downloadStrip(dataUrl, name);
 }

@@ -1,11 +1,17 @@
 export const CAPTURE_JPEG_QUALITY = 0.95;
 
+export type CameraFacingMode = "user" | "environment";
+
 /** Initial getUserMedia request — boosted further after stream starts when supported. */
-export const VIDEO_CONSTRAINTS: MediaTrackConstraints = {
-  facingMode: "user",
-  width: { ideal: 1920 },
-  height: { ideal: 2560 },
-};
+export function getVideoConstraints(
+  facingMode: CameraFacingMode = "user",
+): MediaTrackConstraints {
+  return {
+    facingMode,
+    width: { ideal: 1920 },
+    height: { ideal: 2560 },
+  };
+}
 
 /** Raise the active camera track to its maximum supported resolution. */
 export async function boostCameraResolution(stream: MediaStream): Promise<void> {

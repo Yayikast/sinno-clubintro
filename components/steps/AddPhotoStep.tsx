@@ -14,6 +14,7 @@ import { theme, getAddPhotoThumbnailSizes, getUploadPreviewSize } from "@/themes
 import { trackPhotobooth } from "@/lib/analytics";
 import {
   cropPhotoToSlot,
+  fileToPhotoDataUrl,
 } from "@/lib/photoDisplay";
 import {
   CountdownPicker,
@@ -29,7 +30,7 @@ import { CameraFlash } from "@/components/camera/CameraFlash";
 import { useCountdown } from "@/hooks/useCountdown";
 import { useViewportLayout } from "@/hooks/useViewportLayout";
 import { scaleBoxToFit } from "@/lib/responsiveLayout";
-import { useCamera, VIDEO_CONSTRAINTS } from "@/hooks/useCamera";
+import { useCamera, getVideoConstraints } from "@/hooks/useCamera";
 import { CAPTURE_JPEG_QUALITY } from "@/lib/cameraCapture";
 import { playShutterSound } from "@/lib/shutterSound";
 
@@ -65,6 +66,40 @@ export function AddPhotoStep() {
     null,
   );
   const [hoverSlotIndex, setHoverSlotIndex] = useState<number | null>(null);
+  const [uploadError, setUploadError] = useState<{ index: number; message: string } | null>(
+    null,
+  );
+  const [isConvertingUpload, setIsConvertingUpload] = useState(false);
+  const [videoDevices, setVideoDevices] = useState<MediaDeviceInfo[]>([]);
+  const [deviceIndex, setDeviceIndex] = useState(0);
+
+  const refreshVideoDevices = useCallback(() => {
+    if (!navigator.mediaDevices?.enumerateDevices) return;
+
+    navigator.mediaDevices
+      .enumerateDevices()
+      .then((devices) => {
+        setVideoDevices(devices.filter((device) => device.kind === "videoinput"));
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    refreshVideoDevices();
+  }, [refreshVideoDevices]);
+
+  const activeDevice = videoDevices[deviceIndex];
+  const activeDeviceLabel = activeDevice?.label.toLowerCase() ?? "";
+  // Device labels are only populated once permission is granted; before that
+  // (or if the label is uninformative, e.g. "Integrated Camera") fall back to
+  // assuming the first enumerated camera is the front/selfie one — true on
+  // the overwhelming majority of laptops and phones.
+  const isFrontFacing = /back|rear|environment/.test(activeDeviceLabel)
+    ? false
+    : /front|user|face|selfie/.test(activeDeviceLabel)
+      ? true
+      : deviceIndex === 0;
+  const cameraKey = activeDevice?.deviceId || "default";
 
   const {
     isReady,
@@ -72,9 +107,25 @@ export function AddPhotoStep() {
     activateCamera,
     capturePhoto,
     resetError,
-    handleUserMedia,
+    handleUserMedia: onCameraStreamReady,
     handleUserMediaError,
-  } = useCamera({ webcamRef, initialActive: false });
+  } = useCamera({ webcamRef, initialActive: false, mirrored: isFrontFacing, cameraKey });
+
+  const handleUserMedia = useCallback(
+    (stream: MediaStream) => {
+      onCameraStreamReady(stream);
+      // Labels are blank until permission is granted; re-enumerate now that
+      // it has been, so the front/back heuristic above can use real labels.
+      refreshVideoDevices();
+    },
+    [onCameraStreamReady, refreshVideoDevices],
+  );
+
+  const handleFlipCamera = () => {
+    setDeviceIndex((index) =>
+      videoDevices.length > 0 ? (index + 1) % videoDevices.length : index,
+    );
+  };
 
   const { contentWidth, contentHeight } = useViewportLayout({ hasFooter: true });
   const addPhotoLayout = theme.layout.addPhoto;
@@ -234,45 +285,51 @@ export function AddPhotoStep() {
   };
 
   const handleUploadSlotClick = (index: number) => {
+    setUploadError(null);
     setActiveSlotIndex(index);
     fileInputRef.current?.click();
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
+    event.target.value = "";
     if (!file || activeSlotIndex === null) return;
 
     const slotIndex = activeSlotIndex;
     const slot = frame.slots[slotIndex];
     if (!slot) return;
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result !== "string") return;
+    setUploadError(null);
+    setIsConvertingUpload(true);
 
-      void cropPhotoToSlot(reader.result, slot, frame.aspectRatio)
-        .then((cropped) => {
-          setPhotoAtIndex(slotIndex, cropped);
-          const nextPhotos = photos.map((photo, index) =>
-            index === slotIndex ? cropped : photo,
-          );
-          const nextEmpty = nextPhotos.findIndex((photo) => photo === null);
-          setActiveSlotIndex(nextEmpty === -1 ? null : nextEmpty);
-        })
-        .catch(() => {
-          setPhotoAtIndex(slotIndex, reader.result as string);
-          const nextPhotos = photos.map((photo, index) =>
-            index === slotIndex ? (reader.result as string) : photo,
-          );
-          const nextEmpty = nextPhotos.findIndex((photo) => photo === null);
-          setActiveSlotIndex(nextEmpty === -1 ? null : nextEmpty);
+    void fileToPhotoDataUrl(file)
+      .then((dataUrl) => cropPhotoToSlot(dataUrl, slot, frame.aspectRatio))
+      .then((cropped) => {
+        setPhotoAtIndex(slotIndex, cropped);
+        const nextPhotos = photos.map((photo, index) =>
+          index === slotIndex ? cropped : photo,
+        );
+        const nextEmpty = nextPhotos.findIndex((photo) => photo === null);
+        setActiveSlotIndex(nextEmpty === -1 ? null : nextEmpty);
+      })
+      .catch(() => {
+        // The image couldn't be read/converted/decoded — leave the slot
+        // empty and tell the user, rather than silently "filling" it with
+        // a broken image that can't be replaced by re-selecting the slot.
+        setUploadError({
+          index: slotIndex,
+          message: addPhotoCopy.uploadFailed,
         });
-    };
-    reader.readAsDataURL(file);
-    event.target.value = "";
+        setPhotoAtIndex(slotIndex, null);
+        setActiveSlotIndex(slotIndex);
+      })
+      .finally(() => {
+        setIsConvertingUpload(false);
+      });
   };
 
   const handleModeChange = (mode: "take" | "upload") => {
+    setUploadError(null);
     if (mode === "upload") {
       cancelCountdown();
       captureQueueRef.current = [];
@@ -347,7 +404,7 @@ export function AddPhotoStep() {
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*"
+        accept="image/*,.heic,.heif"
         className="hidden"
         onChange={handleFileChange}
       />
@@ -385,12 +442,26 @@ export function AddPhotoStep() {
               >
                 {showCamera ? (
                   <Webcam
+                    key={cameraKey}
                     ref={webcamRef}
                     audio={false}
-                    mirrored
+                    mirrored={isFrontFacing}
                     screenshotFormat="image/jpeg"
                     screenshotQuality={CAPTURE_JPEG_QUALITY}
-                    videoConstraints={VIDEO_CONSTRAINTS}
+                    videoConstraints={
+                      // Before any camera permission has ever been granted to
+                      // this origin, enumerateDevices() reports deviceId: ""
+                      // for every device (Chrome/Firefox) — an exact "" match
+                      // is unsatisfiable and throws OverconstrainedError, so
+                      // only use deviceId selection once we have a real one.
+                      activeDevice?.deviceId
+                        ? {
+                            deviceId: { exact: activeDevice.deviceId },
+                            width: { ideal: 1920 },
+                            height: { ideal: 2560 },
+                          }
+                        : getVideoConstraints("user")
+                    }
                     onUserMedia={handleUserMedia}
                     onUserMediaError={handleUserMediaError}
                     className="absolute inset-0 h-full w-full object-cover object-center"
@@ -404,6 +475,16 @@ export function AddPhotoStep() {
                     </p>
                   </div>
                 ) : null}
+
+                <button
+                  type="button"
+                  onClick={handleFlipCamera}
+                  disabled={isCapturing || isCountingDown || captureSessionActive}
+                  aria-label={addPhotoCopy.flipCameraAriaLabel}
+                  className="absolute right-2 top-2 flex h-9 aspect-square items-center justify-center rounded-full bg-black/40 disabled:opacity-40"
+                >
+                  <Image src={theme.assets.cameraFlipWhite} alt="" width={18} height={18} />
+                </button>
 
                 {error && !isCaptureError ? (
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/80 p-4 text-center">
@@ -509,10 +590,17 @@ export function AddPhotoStep() {
             />
 
             <p
-              className="font-mono text-center text-xs text-black"
-              style={{ marginTop: uploadLayout.previewToHintGap }}
+              className="font-mono text-center text-xs"
+              style={{
+                marginTop: uploadLayout.previewToHintGap,
+                color: uploadError ? "#B00020" : "#000000",
+              }}
             >
-              {addPhotoCopy.uploadHint}
+              {uploadError
+                ? uploadError.message
+                : isConvertingUpload
+                  ? addPhotoCopy.convertingPhoto
+                  : addPhotoCopy.uploadHint}
             </p>
           </div>
         )}

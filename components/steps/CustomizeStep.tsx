@@ -142,19 +142,8 @@ export function CustomizeStep() {
       }
     >
       <PageContent
-        className="flex w-full shrink-0 flex-col overflow-visible"
-        style={{
-          marginTop: customizeLayout.headerToTitleGap,
-          gap: customizeLayout.titleToContentGap,
-        }}
+        className="flex w-full flex-1 flex-col justify-center overflow-visible"
       >
-        <h2
-          className="shrink-0 font-cursive text-center font-normal text-black"
-          style={{ fontSize: customizeLayout.titleSize }}
-        >
-          {customizeCopy.title}
-        </h2>
-
         <div
           className="customize-layout-row mx-auto flex w-fit max-w-full shrink-0 items-stretch"
           style={{
