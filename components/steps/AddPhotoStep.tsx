@@ -625,6 +625,8 @@ export function AddPhotoStep() {
 
     return (
       <div
+    // The slot the next Snap fills — slots fill in order, so it's the first empty one.
+    const nextSlotIndex = isRetaking ? activeSlotIndex : photos.findIndex((p) => p === null);
         className="flex w-full min-w-0 items-center justify-center overflow-hidden"
         style={{
           gap: addPhotoLayout.thumbnail.gap,
@@ -668,6 +670,20 @@ export function AddPhotoStep() {
                   ) : undefined
                 }
               />
+                  ) : !photo ? (
+                    <div
+                      className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-sm font-mono text-xs"
+                      style={
+                        index === nextSlotIndex
+                          ? {
+                              border: `2px solid ${theme.colors.button.primaryHover}`,
+                              color: "#FFFFFF",
+                            }
+                          : { color: "rgba(255, 255, 255, 0.35)" }
+                      }
+                    >
+                      {index + 1}
+                    </div>
             </div>
           );
         })}
