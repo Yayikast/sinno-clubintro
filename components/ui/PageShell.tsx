@@ -166,7 +166,7 @@ interface PinkButtonProps {
   children: ReactNode;
   onClick?: () => void;
   disabled?: boolean;
-  variant?: "primary" | "secondary";
+  variant?: "primary" | "secondary" | "accent";
   className?: string;
   textSize?: number;
   height?: number;
@@ -186,9 +186,8 @@ export function PinkButton({
   borderRadius = theme.layout.page.primaryButton.radius,
 }: PinkButtonProps) {
   const buttonColors = theme.colors.button;
-  const bgColor = variant === "primary" ? buttonColors.primary : buttonColors.secondary;
-  const hoverColor =
-    variant === "primary" ? buttonColors.primaryHover : buttonColors.secondaryHover;
+  const bgColor = buttonColors[variant];
+  const hoverColor = buttonColors[`${variant}Hover`];
 
   return (
     <button

@@ -22,6 +22,9 @@ export interface ThemeButtonColors {
   primaryHover: string;
   secondary: string;
   secondaryHover: string;
+  /** Stronger fill for the one main action on a screen (e.g. Share). */
+  accent: string;
+  accentHover: string;
 }
 
 export interface ThemeModeTabColors {
@@ -132,10 +135,10 @@ export interface ThemeCustomizeCopy {
   title: string;
   frameLabel: string;
   textLabel: string;
+  captionLabel: string;
   printButton: string;
   printFailed: string;
   previewAlt: string;
-  captionLabel: string;
 }
 
 export interface ThemePrintCopy {

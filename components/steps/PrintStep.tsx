@@ -150,7 +150,14 @@ export function PrintStep() {
               {printCopy.saveFailed}
             </p>
           ) : null}
-          <PinkButton onClick={handleShare} disabled={busyAction !== null}>
+          {/* Share is the main action (it gets the club tagged), so it's the
+              strongest and widest button — as wide as the Home + Save row. */}
+          <PinkButton
+            variant="accent"
+            onClick={handleShare}
+            disabled={busyAction !== null}
+            width={theme.layout.page.primaryButton.width * 2 + 12}
+          >
             <Image src={theme.assets.share} alt="" width={16} height={16} />
             {printCopy.shareButton}
           </PinkButton>

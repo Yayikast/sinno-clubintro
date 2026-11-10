@@ -8,6 +8,8 @@ export const colors: ThemeColors = {
     primaryHover: "#D4A0E7",
     secondary: "#F8E6FF",
     secondaryHover: "#EED6F7",
+    accent: "#D4A0E7",
+    accentHover: "#C58BDB",
   },
   placeholder: "#202020",
   viewfinder: "#202020",
