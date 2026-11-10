@@ -113,6 +113,10 @@ export interface ThemeAddPhotoCopy {
   tryAgainButton: string;
   cameraStarting: string;
   uploadHint: string;
+  /** Upload hint once every slot has a photo. */
+  uploadReplaceHint: string;
+  /** Hint under the disabled Snap button when the camera can't open. */
+  cameraUnavailableHint: string;
   uploadFailed: string;
   convertingPhoto: string;
   capturingMoments: string;

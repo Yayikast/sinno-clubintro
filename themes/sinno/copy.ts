@@ -16,6 +16,8 @@ export const copy: ThemeCopy = {
     tryAgainButton: "Retry",
     cameraStarting: "Opening camera...",
     uploadHint: "upload your photos eiei !",
+    uploadReplaceHint: "tap a photo to replace it",
+    cameraUnavailableHint: "camera not working? tap upload to add photos instead",
     uploadFailed: "Couldn't load that photo — try a different image.",
     convertingPhoto: "Converting your photo...",
     capturingMoments: "capturing SINNO moments...",

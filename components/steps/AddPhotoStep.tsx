@@ -504,6 +504,9 @@ export function AddPhotoStep() {
 
   const handleModeChange = (mode: "take" | "upload") => {
     setUploadError(null);
+    // Must run first: it clears the active slot, which the upload branch below
+    // then sets to the next empty slot.
+    setPhotoMode(mode);
     if (mode === "upload") {
       cancelCountdown();
       captureQueueRef.current = [];
@@ -517,7 +520,6 @@ export function AddPhotoStep() {
       setActiveSlotIndex(null);
       setSessionStarted(true);
     }
-    setPhotoMode(mode);
   };
 
   const isCaptureError = error?.type === "capture-failed";
@@ -526,7 +528,9 @@ export function AddPhotoStep() {
     photoMode === "take" && (!sessionStarted || !isReady) && !error;
 
   const takeStatusHint =
-    isCountingDown || isCapturing || captureSessionActive
+    error && !isCaptureError && !allPhotosFilled
+      ? addPhotoCopy.cameraUnavailableHint
+      : isCountingDown || isCapturing || captureSessionActive
       ? batchCaptureMeta && batchCaptureMeta.total > 1
         ? addPhotoCopy.capturingPhotoOf(batchCaptureMeta.pos, batchCaptureMeta.total)
         : addPhotoCopy.capturingMoments
