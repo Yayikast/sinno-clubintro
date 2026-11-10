@@ -135,6 +135,7 @@ export interface ThemeCustomizeCopy {
   printButton: string;
   printFailed: string;
   previewAlt: string;
+  captionLabel: string;
 }
 
 export interface ThemePrintCopy {

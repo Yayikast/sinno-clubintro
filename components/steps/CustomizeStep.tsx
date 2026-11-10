@@ -190,7 +190,16 @@ export function CustomizeStep() {
           swatchSize={swatch}
           swatchGap={customizeLayout.swatchGap}
         />
+        <label
+          htmlFor="strip-caption"
+          className="shrink-0 font-mono text-xs text-black"
+          // Same spacing as between the frame and text color sections.
+          style={{ marginTop: customizeLayout.sectionGap - customizeLayout.labelToSwatchesGap }}
+        >
+          {customizeCopy.captionLabel}
+        </label>
         <input
+          id="strip-caption"
           type="text"
           value={captionText}
           onChange={(event) => setCaptionText(event.target.value)}

@@ -32,6 +32,7 @@ export const copy: ThemeCopy = {
     title: "Customize >3<",
     frameLabel: "frame color",
     textLabel: "text color",
+    captionLabel: "caption",
     printButton: "Print",
     printFailed: "Couldn't make your strip — please try again.",
     previewAlt: "SINNO strip preview",

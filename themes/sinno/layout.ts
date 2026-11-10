@@ -319,6 +319,8 @@ export function estimateCustomizeControlsHeight(
     labelHeight +
     customize.labelToSwatchesGap +
     getSwatchGridHeight(textSwatchCount, contentWidth, swatchSize) +
+    customize.sectionGap +
+    labelHeight + // caption label
     customize.labelToSwatchesGap +
     inputHeight
   );
