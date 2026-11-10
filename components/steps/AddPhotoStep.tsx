@@ -601,7 +601,9 @@ export function AddPhotoStep() {
         ? uploadError.message
         : isConvertingUpload
           ? addPhotoCopy.convertingPhoto
-          : addPhotoCopy.uploadHint}
+          : allPhotosFilled
+            ? addPhotoCopy.uploadReplaceHint
+            : addPhotoCopy.uploadHint}
     </p>
   );
 
