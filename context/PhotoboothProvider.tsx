@@ -20,7 +20,19 @@ import {
   type PhotoboothStep,
 } from "@/types/photobooth";
 
-const { defaults, getFrameById } = theme.frames;
+const { defaults, getFrameById, frameColorSwatches } = theme.frames;
+
+/** Black or white caption, whichever reads better on the given frame fill. */
+function getReadableCaptionColor(frameFill: string): string | null {
+  const swatch = frameColorSwatches.find((item) => item.value === frameFill);
+  if (swatch?.captionColor) return swatch.captionColor;
+
+  const hex = /^#([0-9a-f]{6})$/i.exec(frameFill)?.[1];
+  if (!hex) return null;
+  const [r, g, b] = [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16));
+  const brightness = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return brightness > 140 ? "#000000" : "#FFFFFF";
+}
 
 interface PhotoboothContextValue {
   step: PhotoboothStep;
@@ -125,11 +137,22 @@ export function PhotoboothProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const setFrameColor = useCallback((color: string) => {
-    setFrameColorState(color);
-  }, []);
+  // Until someone picks a text color, the caption follows the frame color so
+  // it stays readable (e.g. white text would vanish on a light frame).
+  const [textColorChosen, setTextColorChosen] = useState(false);
+
+  const setFrameColor = useCallback(
+    (color: string) => {
+      setFrameColorState(color);
+      if (textColorChosen) return;
+      const readable = getReadableCaptionColor(color);
+      if (readable) setTextColorState(readable);
+    },
+    [textColorChosen],
+  );
 
   const setTextColor = useCallback((color: string) => {
+    setTextColorChosen(true);
     setTextColorState(color);
   }, []);
 
@@ -171,6 +194,7 @@ export function PhotoboothProvider({ children }: { children: ReactNode }) {
     setCountdownSecondsState(initial.countdownSeconds);
     setFrameColorState(initial.frameColor);
     setTextColorState(initial.textColor);
+    setTextColorChosen(false);
     setCaptionTextState(initial.captionText);
     setFinalStripUrlState(initial.finalStripUrl);
     setActiveSlotIndexState(initial.activeSlotIndex);

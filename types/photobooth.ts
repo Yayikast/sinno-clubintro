@@ -35,6 +35,8 @@ export interface ColorSwatch {
   id: string;
   label: string;
   value: string;
+  /** Caption color that stays readable on this frame fill (images only; plain colors are worked out). */
+  captionColor?: string;
 }
 
 export interface PhotoboothState {

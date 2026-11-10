@@ -104,13 +104,14 @@ const FRAME_COLOR_SWATCHES: ColorSwatch[] = [
   { id: "gray", label: "Gray", value: "#CACACA" },
   { id: "white", label: "White", value: "#FFFFFF" },
   { id: "purple-dark", label: "Purple Dark", value: "#D4A0E7" },
-  { id: "pattern1", label: "Pattern 1", value: "pattern:frame1.webp" },
-  { id: "pattern2", label: "Pattern 2", value: "pattern:frame2.jpeg" },
-  { id: "pattern3", label: "Pattern 3", value: "pattern:frame3.webp" },
-  { id: "pattern4", label: "Pattern 4", value: "pattern:frame4.webp" },
-  { id: "pattern5", label: "Pattern 5", value: "pattern:frame5.png" },
-  { id: "overlay-frame6", label: "Overlay 1", value: "overlay:frame6" },
-  { id: "overlay-frame7", label: "Overlay 2", value: "overlay:frame7" },
+  // captionColor: picked from each image's brightness near the caption.
+  { id: "pattern1", label: "Pattern 1", value: "pattern:frame1.webp", captionColor: "#FFFFFF" },
+  { id: "pattern2", label: "Pattern 2", value: "pattern:frame2.jpeg", captionColor: "#FFFFFF" },
+  { id: "pattern3", label: "Pattern 3", value: "pattern:frame3.webp", captionColor: "#FFFFFF" },
+  { id: "pattern4", label: "Pattern 4", value: "pattern:frame4.webp", captionColor: "#000000" },
+  { id: "pattern5", label: "Pattern 5", value: "pattern:frame5.png", captionColor: "#000000" },
+  { id: "overlay-frame6", label: "Overlay 1", value: "overlay:frame6", captionColor: "#000000" },
+  { id: "overlay-frame7", label: "Overlay 2", value: "overlay:frame7", captionColor: "#000000" },
 ];
 
 const TEXT_COLOR_SWATCHES: ColorSwatch[] = [
