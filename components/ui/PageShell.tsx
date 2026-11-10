@@ -64,8 +64,9 @@ export function PageShell({
           src={theme.assets.background}
           alt=""
           fill
+          sizes="100vw"
           className="object-cover"
-          priority
+          preload
         />
       </div>
 

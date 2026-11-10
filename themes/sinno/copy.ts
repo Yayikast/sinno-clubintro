@@ -15,7 +15,6 @@ export const copy: ThemeCopy = {
     nextButton: "Continue",
     tryAgainButton: "Retry",
     cameraStarting: "Opening camera...",
-    cameraTapToStart: "Tap Snap to begin",
     uploadHint: "upload your photos eiei !",
     uploadFailed: "Couldn't load that photo — try a different image.",
     convertingPhoto: "Converting your photo...",
@@ -32,6 +31,7 @@ export const copy: ThemeCopy = {
     frameLabel: "frame color",
     textLabel: "text color",
     printButton: "Print",
+    printFailed: "Couldn't make your strip — please try again.",
     previewAlt: "SINNO strip preview",
   },
   print: {
@@ -40,7 +40,9 @@ export const copy: ThemeCopy = {
     stripAlt: "Your SINNO photostrip",
     homeButton: "Home",
     downloadButton: "Save",
+    shareButton: "Share",
     saveFailed: "Couldn't save your strip — try again or take a screenshot.",
+    shareFailed: "Couldn't share your strip — try again or save it instead.",
   },
   camera: {
     permissionDenied:

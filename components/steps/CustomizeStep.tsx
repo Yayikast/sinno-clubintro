@@ -18,6 +18,8 @@ import { scaleBoxToFit } from "@/lib/responsiveLayout";
 import { useAvailableContentWidth } from "@/hooks/useAvailableContentWidth";
 import { useStableContentHeight } from "@/hooks/useStableContentHeight";
 import { useViewportLayout } from "@/hooks/useViewportLayout";
+import { useIsLandscape } from "@/hooks/useIsLandscape";
+import { LandscapeShell } from "@/components/ui/LandscapeShell";
 import {
   ColorSwatchGrid,
   ActionFooter,
@@ -46,6 +48,8 @@ export function CustomizeStep() {
   const { frameColorSwatches, textColorSwatches } = theme.frames;
 
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isPreparingPrint, setIsPreparingPrint] = useState(false);
+  const [printError, setPrintError] = useState(false);
   const debounceRef = useRef<number | null>(null);
   const availableContentWidth = useAvailableContentWidth();
   const { contentHeight: liveContentHeight } = useViewportLayout({ hasFooter: true });
@@ -71,6 +75,7 @@ export function CustomizeStep() {
     previewMaxHeight,
   );
   const rowHeight = Math.max(previewDimensions.height, controlsHeight);
+  const isLandscape = useIsLandscape();
 
   useEffect(() => {
     preloadFrameOverlay(frame.svgPath);
@@ -112,19 +117,125 @@ export function CustomizeStep() {
   }, [captionText, frame, frameColor, photos, textColor]);
 
   const handlePrint = async () => {
-    const filledPhotos = photos.filter((photo): photo is string => photo !== null);
-    const url = await generateStrip(
-      filledPhotos,
-      frame,
-      frameColor,
-      textColor,
-      captionText,
-      STRIP_CUSTOMIZE_PRINT_CAPTION_EXTRA_OFFSET_PX,
-    );
-    setFinalStripUrl(url);
-    trackPhotobooth("photobooth_strip_printed", { frameId: frame.id });
-    goToStep("print");
+    if (isPreparingPrint) return;
+    setIsPreparingPrint(true);
+    setPrintError(false);
+
+    try {
+      const filledPhotos = photos.filter((photo): photo is string => photo !== null);
+      const url = await generateStrip(
+        filledPhotos,
+        frame,
+        frameColor,
+        textColor,
+        captionText,
+        STRIP_CUSTOMIZE_PRINT_CAPTION_EXTRA_OFFSET_PX,
+      );
+      setFinalStripUrl(url);
+      trackPhotobooth("photobooth_strip_printed", { frameId: frame.id });
+      goToStep("print");
+    } catch {
+      setPrintError(true);
+      setIsPreparingPrint(false);
+    }
   };
+
+  const printFooter = (
+    <ActionFooter
+      hint={
+        printError ? (
+          <span style={{ color: "#B00020" }}>{customizeCopy.printFailed}</span>
+        ) : undefined
+      }
+    >
+      <PinkButton onClick={handlePrint} disabled={isPreparingPrint}>
+        <Image src={theme.assets.print} alt="" width={16} height={16} />
+        {customizeCopy.printButton}
+      </PinkButton>
+    </ActionFooter>
+  );
+
+  const renderPreview = (size: { width: number; height: number }) =>
+    previewUrl ? (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={previewUrl}
+        alt={customizeCopy.previewAlt}
+        className="block max-h-full max-w-full rounded-sm object-contain shadow-md"
+        style={{ width: size.width, height: size.height }}
+      />
+    ) : (
+      <div className="rounded-sm bg-black/5" style={{ width: size.width, height: size.height }} />
+    );
+
+  const renderControls = (width: number, swatch: number) => (
+    <>
+      <ColorSwatchGrid
+        label={customizeCopy.frameLabel}
+        colors={frameColorSwatches}
+        selected={frameColor}
+        onSelect={setFrameColor}
+        swatchSize={swatch}
+        swatchGap={customizeLayout.swatchGap}
+      />
+
+      <div className="flex flex-col" style={{ gap: customizeLayout.labelToSwatchesGap }}>
+        <p className="shrink-0 font-mono text-xs text-black">{customizeCopy.textLabel}</p>
+        <ColorSwatchGrid
+          label={customizeCopy.textLabel}
+          showLabel={false}
+          colors={textColorSwatches}
+          selected={textColor}
+          onSelect={setTextColor}
+          swatchSize={swatch}
+          swatchGap={customizeLayout.swatchGap}
+        />
+        <input
+          type="text"
+          value={captionText}
+          onChange={(event) => setCaptionText(event.target.value)}
+          maxLength={STRIP_CAPTION_MAX_LENGTH}
+          className="font-cursive shrink-0 bg-transparent text-black outline-none"
+          style={{
+            width,
+            maxWidth: "100%",
+            boxSizing: "border-box",
+            borderRadius: customizeLayout.inputRadius,
+            border: `1px solid ${customizeLayout.inputBorder}`,
+            paddingInline: customizeLayout.inputPaddingX,
+            paddingBlock: customizeLayout.inputPaddingY,
+            fontSize: customizeLayout.inputFontSize,
+            minHeight: customizeLayout.inputMinHeight,
+            height: customizeLayout.inputMinHeight,
+            lineHeight: 1,
+          }}
+        />
+      </div>
+    </>
+  );
+
+  if (isLandscape) {
+    return (
+      <LandscapeShell
+        showBack
+        onBack={goBack}
+        media={(size) =>
+          renderPreview(
+            scaleBoxToFit(size.height * frame.aspectRatio, size.height, size.width, size.height),
+          )
+        }
+        controls={(width) => (
+          <div
+            className="flex flex-1 flex-col justify-center"
+            style={{ gap: customizeLayout.sectionGap }}
+          >
+            {renderControls(width, customizeLayout.swatchMinSize)}
+          </div>
+        )}
+        footer={printFooter}
+      />
+    );
+  }
 
   return (
     <PageShell
@@ -132,18 +243,9 @@ export function CustomizeStep() {
       onBack={goBack}
       mainClassName="min-h-0"
       footerStyle={{ marginTop: customizeLayout.contentToFooterGap }}
-      footer={
-        <ActionFooter>
-          <PinkButton onClick={handlePrint}>
-            <Image src={theme.assets.print} alt="" width={16} height={16} />
-            {customizeCopy.printButton}
-          </PinkButton>
-        </ActionFooter>
-      }
+      footer={printFooter}
     >
-      <PageContent
-        className="flex w-full flex-1 flex-col justify-center overflow-visible"
-      >
+      <PageContent className="flex w-full flex-1 flex-col justify-center overflow-visible">
         <div
           className="customize-layout-row mx-auto flex w-fit max-w-full shrink-0 items-stretch"
           style={{
@@ -158,26 +260,7 @@ export function CustomizeStep() {
               height: rowHeight,
             }}
           >
-            {previewUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={previewUrl}
-                alt={customizeCopy.previewAlt}
-                className="block max-h-full max-w-full rounded-sm object-contain shadow-md"
-                style={{
-                  width: previewDimensions.width,
-                  height: previewDimensions.height,
-                }}
-              />
-            ) : (
-              <div
-                className="rounded-sm bg-black/5"
-                style={{
-                  width: previewDimensions.width,
-                  height: previewDimensions.height,
-                }}
-              />
-            )}
+            {renderPreview(previewDimensions)}
           </div>
 
           <div
@@ -188,50 +271,7 @@ export function CustomizeStep() {
               height: rowHeight,
             }}
           >
-            <ColorSwatchGrid
-              label={customizeCopy.frameLabel}
-              colors={frameColorSwatches}
-              selected={frameColor}
-              onSelect={setFrameColor}
-              swatchSize={swatchSize}
-              swatchGap={customizeLayout.swatchGap}
-            />
-
-            <div
-              className="flex flex-col"
-              style={{ gap: customizeLayout.labelToSwatchesGap }}
-            >
-              <p className="shrink-0 font-mono text-xs text-black">{customizeCopy.textLabel}</p>
-              <ColorSwatchGrid
-                label={customizeCopy.textLabel}
-                showLabel={false}
-                colors={textColorSwatches}
-                selected={textColor}
-                onSelect={setTextColor}
-                swatchSize={swatchSize}
-                swatchGap={customizeLayout.swatchGap}
-              />
-              <input
-                type="text"
-                value={captionText}
-                onChange={(event) => setCaptionText(event.target.value)}
-                maxLength={STRIP_CAPTION_MAX_LENGTH}
-                className="font-cursive shrink-0 bg-transparent text-black outline-none"
-                style={{
-                  width: controlsContentWidth,
-                  maxWidth: "100%",
-                  boxSizing: "border-box",
-                  borderRadius: customizeLayout.inputRadius,
-                  border: `1px solid ${customizeLayout.inputBorder}`,
-                  paddingInline: customizeLayout.inputPaddingX,
-                  paddingBlock: customizeLayout.inputPaddingY,
-                  fontSize: customizeLayout.inputFontSize,
-                  minHeight: customizeLayout.inputMinHeight,
-                  height: customizeLayout.inputMinHeight,
-                  lineHeight: 1,
-                }}
-              />
-            </div>
+            {renderControls(controlsContentWidth, swatchSize)}
           </div>
         </div>
       </PageContent>

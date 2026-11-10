@@ -216,6 +216,8 @@ interface FrameSelectorProps {
   unselectedOpacity?: number;
   selectedRadius?: number;
   gap?: number;
+  /** Width to fit the row into; defaults to the portrait content column. */
+  availableWidth?: number;
 }
 
 export function FrameSelector({
@@ -228,8 +230,10 @@ export function FrameSelector({
   unselectedOpacity = theme.layout.landing.selectorUnselectedOpacity,
   selectedRadius = 4,
   gap = 8,
+  availableWidth,
 }: FrameSelectorProps) {
-  const availableContentWidth = useAvailableContentWidth();
+  const portraitContentWidth = useAvailableContentWidth();
+  const availableContentWidth = availableWidth ?? portraitContentWidth;
   const layout = getFrameSelectorLayout(frames.length, availableContentWidth);
   const size = layout.size || selectedSize;
   const rowGap = layout.gap || gap;

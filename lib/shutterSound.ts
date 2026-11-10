@@ -10,6 +10,18 @@ function getAudioContext(): AudioContext | null {
   return audioContext;
 }
 
+/**
+ * Call from a tap handler. The shutter itself plays later from a countdown
+ * timer, and iOS Safari only lets audio start from a user gesture — so the
+ * audio context has to be created/resumed while the tap is still happening.
+ */
+export function unlockShutterSound(): void {
+  const ctx = getAudioContext();
+  if (ctx && ctx.state === "suspended") {
+    void ctx.resume();
+  }
+}
+
 export function playShutterSound(): void {
   const ctx = getAudioContext();
   if (!ctx) return;

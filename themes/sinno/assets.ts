@@ -11,9 +11,12 @@ export const assets: ThemeAssets = {
   gallery: "/sinno/icons/gallery.svg",
   home: "/sinno/icons/home.svg",
   download: "/sinno/icons/download.svg",
+  share: "/sinno/icons/share.svg",
   print: "/sinno/icons/print.svg",
   printerTop: "/sinno/assets/printer-top.svg",
   printerBottom: "/sinno/assets/printer-bottom.svg",
   colorPicker: "/sinno/swatches/color-picker.png",
   patternsBase: "/sinno/patterns",
+  shareBackgroundNarrow: "/sinno/share/share1.jpg",
+  shareBackgroundWide: "/sinno/share/share2.jpg",
 };

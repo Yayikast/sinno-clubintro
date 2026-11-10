@@ -221,25 +221,97 @@ export async function generateStrip(
   return canvas.toDataURL("image/png");
 }
 
-async function dataUrlToBlob(dataUrl: string): Promise<Blob> {
+/** Which Instagram-share background to use for each frame layout (per product spec). */
+const SHARE_NARROW_FRAMES = new Set(["frame1", "frame2", "frame3"]);
+
+function getShareBackgroundPath(frame: FrameConfig): string {
+  return SHARE_NARROW_FRAMES.has(frame.id)
+    ? theme.assets.shareBackgroundNarrow
+    : theme.assets.shareBackgroundWide;
+}
+
+/** Instagram-share template dimensions (per product spec). */
+const SHARE_TEMPLATE_WIDTH = 1080;
+const SHARE_TEMPLATE_HEIGHT = 1920;
+const SHARE_STRIP_HEIGHT = 1374;
+const SHARE_STRIP_Y = 308;
+
+/**
+ * Composites the finished strip centered over the Instagram-share background
+ * for this frame's layout (share1.jpg for frame1-3, share2.jpg for frame4-5).
+ * Canvas and strip sizing are fixed per spec, independent of the source
+ * assets' native resolution.
+ */
+export async function generateShareImage(
+  finalStripUrl: string,
+  frame: FrameConfig,
+): Promise<string> {
+  const [background, strip] = await Promise.all([
+    loadCachedImage(getShareBackgroundPath(frame)),
+    loadImage(finalStripUrl),
+  ]);
+
+  const canvas = document.createElement("canvas");
+  canvas.width = SHARE_TEMPLATE_WIDTH;
+  canvas.height = SHARE_TEMPLATE_HEIGHT;
+
+  const ctx = canvas.getContext("2d");
+  if (!ctx) {
+    throw new Error("Canvas not supported");
+  }
+
+  ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
+
+  const stripAspect = strip.naturalWidth / strip.naturalHeight;
+  const drawHeight = SHARE_STRIP_HEIGHT;
+  const drawWidth = drawHeight * stripAspect;
+
+  ctx.drawImage(
+    strip,
+    (canvas.width - drawWidth) / 2,
+    SHARE_STRIP_Y,
+    drawWidth,
+    drawHeight,
+  );
+
+  return canvas.toDataURL("image/jpeg", 0.92);
+}
+
+async function dataUrlToFile(
+  dataUrl: string,
+  filename: string,
+  mimeType: string,
+): Promise<File> {
   const response = await fetch(dataUrl);
-  return response.blob();
+  const blob = await response.blob();
+  return new File([blob], filename, { type: mimeType });
+}
+
+/** The Save file: the strip on its own, as a PNG. */
+export function createStripFile(finalStripUrl: string): Promise<File> {
+  return dataUrlToFile(finalStripUrl, `${downloadPrefix}-${Date.now()}.png`, "image/png");
+}
+
+/** The Share file: the strip on the Instagram template, as a JPEG. */
+export async function createShareFile(
+  finalStripUrl: string,
+  frame: FrameConfig,
+): Promise<File> {
+  const shareImageUrl = await generateShareImage(finalStripUrl, frame);
+  return dataUrlToFile(shareImageUrl, `${downloadPrefix}-share-${Date.now()}.jpg`, "image/jpeg");
 }
 
 /**
- * Downloads via a short-lived Blob URL rather than putting the (potentially
- * multi-MB, since the export is a lossless PNG) data: URI directly in the
- * anchor href — large data: URIs are known to silently fail to navigate on
- * some mobile browsers, whereas Blob URLs are a short opaque reference.
+ * Downloads via a short-lived Blob URL rather than a data: URI in the anchor
+ * href — large data: URIs are known to silently fail to navigate on some
+ * mobile browsers, whereas Blob URLs are a short opaque reference.
  */
-export async function downloadStrip(dataUrl: string, filename?: string): Promise<void> {
-  const name = filename ?? `${downloadPrefix}-${Date.now()}.png`;
-  const blob = await dataUrlToBlob(dataUrl);
-  const objectUrl = URL.createObjectURL(blob);
+function downloadFile(file: File): void {
+  const objectUrl = URL.createObjectURL(file);
 
   const link = document.createElement("a");
   link.href = objectUrl;
-  link.download = name;
+  link.download = file.name;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -254,52 +326,37 @@ function isMobileGalleryTarget(): boolean {
   return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 }
 
-async function dataUrlToPngFile(
-  dataUrl: string,
-  filename: string,
-): Promise<File> {
-  const blob = await dataUrlToBlob(dataUrl);
-  return new File([blob], filename, { type: "image/png" });
-}
-
-function canSharePngFile(file: File): boolean {
+function canShareFile(file: File): boolean {
   if (typeof navigator.share !== "function") return false;
   return !navigator.canShare || navigator.canShare({ files: [file] });
 }
 
 /**
- * Save strip to Photos/Gallery on mobile via the system share sheet
- * (choose "Save Image" / "Save to Photos"). Falls back to file download on
- * desktop, and on any failure in the share path — unsupported, permission
- * denied, the data: URI → File conversion failing, etc. — except the user
- * cancelling the share sheet themselves, which should not trigger a fallback.
+ * On phones, opens the OS share sheet (where people pick "Save Image" or
+ * Instagram — a website can't open a specific app itself). Everywhere else,
+ * or if sharing fails, downloads the file instead.
  *
- * The mobile branch used to await the file conversion outside any try/catch:
- * if it threw (a real risk given the multi-MB PNG export), saveStrip's
- * promise rejected with no fallback, and since callers invoke this as
- * `void saveStrip(...)`, the failure was a silent unhandled rejection — the
- * Save button did nothing, with no error and no download.
+ * navigator.share() is called before anything is awaited: browsers only allow
+ * it shortly after a tap, so the file should be built ahead of time (see
+ * createStripFile / createShareFile) rather than after the tap.
  */
-export async function saveStrip(
-  dataUrl: string,
-  filename?: string,
-): Promise<void> {
-  const name = filename ?? `${downloadPrefix}-${Date.now()}.png`;
-
-  if (isMobileGalleryTarget()) {
+export async function shareOrDownloadFile(file: File): Promise<void> {
+  if (isMobileGalleryTarget() && canShareFile(file)) {
     try {
-      const file = await dataUrlToPngFile(dataUrl, name);
-      if (canSharePngFile(file)) {
-        await navigator.share({ files: [file] });
-        return;
-      }
+      await navigator.share({ files: [file] });
+      return;
     } catch (error) {
-      if (error instanceof DOMException && error.name === "AbortError") {
+      // The person closed the sheet, or a share is already open — either
+      // way, don't also start a download.
+      if (
+        error instanceof DOMException &&
+        (error.name === "AbortError" || error.name === "InvalidStateError")
+      ) {
         return;
       }
-      // Any other failure falls through to the direct-download fallback.
+      // Anything else (unsupported, not allowed) falls back to a download.
     }
   }
 
-  await downloadStrip(dataUrl, name);
+  downloadFile(file);
 }

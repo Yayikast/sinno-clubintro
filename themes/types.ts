@@ -87,11 +87,16 @@ export interface ThemeAssets {
   gallery: string;
   home: string;
   download: string;
+  share: string;
   print: string;
   printerTop: string;
   printerBottom: string;
   colorPicker: string;
   patternsBase: string;
+  /** Instagram-share background for the narrower frame layouts (frame1-3, 400:1200). */
+  shareBackgroundNarrow: string;
+  /** Instagram-share background for the wider frame layouts (frame4-5, 762:1200). */
+  shareBackgroundWide: string;
 }
 
 export interface ThemeLandingCopy {
@@ -107,7 +112,6 @@ export interface ThemeAddPhotoCopy {
   nextButton: string;
   tryAgainButton: string;
   cameraStarting: string;
-  cameraTapToStart: string;
   uploadHint: string;
   uploadFailed: string;
   convertingPhoto: string;
@@ -125,6 +129,7 @@ export interface ThemeCustomizeCopy {
   frameLabel: string;
   textLabel: string;
   printButton: string;
+  printFailed: string;
   previewAlt: string;
 }
 
@@ -134,7 +139,9 @@ export interface ThemePrintCopy {
   stripAlt: string;
   homeButton: string;
   downloadButton: string;
+  shareButton: string;
   saveFailed: string;
+  shareFailed: string;
 }
 
 export interface ThemeShellCopy {
