@@ -292,14 +292,15 @@ export function AddPhotoStep() {
   const uploadLayout = addPhotoLayout.upload;
   const takeSpacing = addPhotoLayout.takePhoto;
   const addPhotoCopy = theme.copy.addPhoto;
-  const uploadWidthLimited = Math.min(uploadPreviewSize.width, contentWidth);
-  const uploadHeightFromWidth =
-    (uploadWidthLimited / uploadPreviewSize.width) * uploadPreviewSize.height;
+  // Grow the preview into the free space (up to 1.4x its design size), leaving
+  // room for the mode tabs, gaps and hint around it.
+  const UPLOAD_PREVIEW_MAX_SCALE = 1.4;
+  const uploadChromeHeight = 48 + uploadLayout.tabsToPreviewGap + uploadLayout.previewToHintGap + 36;
   const uploadPreviewDimensions = scaleBoxToFit(
-    uploadWidthLimited,
-    uploadHeightFromWidth,
+    uploadPreviewSize.width * UPLOAD_PREVIEW_MAX_SCALE,
+    uploadPreviewSize.height * UPLOAD_PREVIEW_MAX_SCALE,
     contentWidth,
-    Math.max(180, contentHeight * 0.55),
+    Math.max(180, contentHeight - uploadChromeHeight),
   );
 
   // The shot is taken asynchronously (after waiting for the camera), so read
@@ -624,11 +625,11 @@ export function AddPhotoStep() {
 
   const renderThumbnails = (rowWidth: number) => {
     const thumbnailSizes = getAddPhotoThumbnailSizes(frame.id, rowWidth, true);
+    // The slot the next Snap fills — slots fill in order, so it's the first empty one.
+    const nextSlotIndex = isRetaking ? activeSlotIndex : photos.findIndex((p) => p === null);
 
     return (
       <div
-    // The slot the next Snap fills — slots fill in order, so it's the first empty one.
-    const nextSlotIndex = isRetaking ? activeSlotIndex : photos.findIndex((p) => p === null);
         className="flex w-full min-w-0 items-center justify-center overflow-hidden"
         style={{
           gap: addPhotoLayout.thumbnail.gap,
@@ -669,9 +670,6 @@ export function AddPhotoStep() {
                     >
                       <Image src={theme.assets.cameraWhite} alt="" width={20} height={20} />
                     </div>
-                  ) : undefined
-                }
-              />
                   ) : !photo ? (
                     <div
                       className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-sm font-mono text-xs"
@@ -686,6 +684,9 @@ export function AddPhotoStep() {
                     >
                       {index + 1}
                     </div>
+                  ) : undefined
+                }
+              />
             </div>
           );
         })}
